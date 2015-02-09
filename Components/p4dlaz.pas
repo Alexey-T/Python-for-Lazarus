@@ -8,7 +8,7 @@ interface
 
 uses
   PythonEngine, PythonGUIInputOutput, MethodCallBack, TinyWideStrings, 
-  VarPyth, LazarusPackageIntf;
+  LazarusPackageIntf;
 
 implementation
 

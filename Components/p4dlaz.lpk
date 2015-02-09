@@ -3,6 +3,7 @@
   <Package Version="4">
     <PathDelim Value="\"/>
     <Name Value="P4DLaz"/>
+    <Type Value="RunAndDesignTime"/>
     <CompilerOptions>
       <Version Value="11"/>
       <PathDelim Value="\"/>
@@ -16,14 +17,15 @@
           <UseAnsiStrings Value="False"/>
         </SyntaxOptions>
       </Parsing>
-      <Other>
-        <CompilerMessages>
-          <UseMsgFile Value="True"/>
-        </CompilerMessages>
-        <CompilerPath Value="$(CompPath)"/>
-      </Other>
+      <Linking>
+        <Debugging>
+          <UseExternalDbgSyms Value="True"/>
+        </Debugging>
+      </Linking>
     </CompilerOptions>
-    <Files Count="6">
+    <Description Value="P4D"/>
+    <Version Major="1"/>
+    <Files Count="5">
       <Item1>
         <Filename Value="Sources\Core\PythonEngine.pas"/>
         <HasRegisterProc Value="True"/>
@@ -43,15 +45,10 @@
         <UnitName Value="TinyWideStrings"/>
       </Item4>
       <Item5>
-        <Filename Value="Sources\Core\VarPyth.pas"/>
-        <UnitName Value="VarPyth"/>
-      </Item5>
-      <Item6>
         <Filename Value="p4dlaz.pas"/>
         <UnitName Value="P4DLaz"/>
-      </Item6>
+      </Item5>
     </Files>
-    <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
       <Item1>
         <PackageName Value="LCL"/>
