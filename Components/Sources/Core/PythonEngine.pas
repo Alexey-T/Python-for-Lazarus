@@ -3108,6 +3108,8 @@ procedure MaskFPUExceptions(ExceptionsMasked : boolean;
 
 implementation
 
+{$R *.dcr} //AT
+
 {$IFDEF MSWINDOWS}
 uses Registry;
 {$ENDIF}
