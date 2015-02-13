@@ -156,14 +156,15 @@ begin
 end;
 
 function TPythonGUIInputOutput.ReceiveUniData: UnicodeString;
-Var
-  S : string;
+var
+  S: String;
 begin
   if Assigned( FOnReceiveUniData ) then
     Result := inherited ReceiveUniData
   else
   begin
-    InputQuery( 'Query from Python', 'Enter text', S);
+    S := '';
+    InputQuery('Python prompt', 'Text:', S);
     Result := S;
   end;
 end;
@@ -247,4 +248,4 @@ begin
   RegisterComponents('Python', [TPythonGUIInputOutput]);
 end;
 
-end.
+end.

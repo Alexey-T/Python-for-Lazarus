@@ -68,12 +68,11 @@ unit PythonEngine;
 interface
 
 uses
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
   Windows,
-{$ENDIF}
-{$IFDEF LINUX}
+{$ELSE}
   Types,
-  DynLibs, //AT instead of "Libc" - Libc not supported on Linux x64
+  DynLibs, //AT
   Forms, //AT for "Application.terminate"
 {$ENDIF}
   Classes,
@@ -126,9 +125,10 @@ type
     APIVersion   : Integer;
     CanUseLatest : Boolean;
   end;
+
 const
-{$IFDEF MSWINDOWS}
-  PYTHON_KNOWN_VERSIONS: array[1..9] of TPythonVersionProp =
+{$ifdef windows}
+  PYTHON_KNOWN_VERSIONS: array[1..10] of TPythonVersionProp =
   ( (DllName: 'python23.dll'; RegVersion: '2.3'; APIVersion: 1012; CanUseLatest: True),
     (DllName: 'python24.dll'; RegVersion: '2.4'; APIVersion: 1012; CanUseLatest: True),
     (DllName: 'python25.dll'; RegVersion: '2.5'; APIVersion: 1013; CanUseLatest: True),
@@ -137,10 +137,11 @@ const
     (DllName: 'python30.dll'; RegVersion: '3.0'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python31.dll'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python32.dll'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True) );
-{$ENDIF}
-{$IFDEF LINUX}
-  PYTHON_KNOWN_VERSIONS: array[1..9] of TPythonVersionProp =
+    (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+{$endif}
+{$ifdef linux}
+  PYTHON_KNOWN_VERSIONS: array[1..10] of TPythonVersionProp =
   ( (DllName: 'libpython2.3.so'; RegVersion: '2.3'; APIVersion: 1012; CanUseLatest: True),
     (DllName: 'libpython2.4.so'; RegVersion: '2.4'; APIVersion: 1012; CanUseLatest: True),
     (DllName: 'libpython2.5.so'; RegVersion: '2.5'; APIVersion: 1013; CanUseLatest: True),
@@ -149,8 +150,14 @@ const
     (DllName: 'libpython3.0.so'; RegVersion: '3.0'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.1.so'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.2.so'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.3.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True) );
-{$ENDIF}
+    (DllName: 'libpython3.3.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+{$endif}
+{$ifdef darwin}
+  PYTHON_KNOWN_VERSIONS: array[1..1] of TPythonVersionProp =
+  ( (DllName: 'libpython3.4.dylib'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+{$endif}
+
 {$IFDEF PYTHON23}
   COMPILED_FOR_PYTHON_VERSION_INDEX = 1;
 {$ENDIF}
@@ -1340,7 +1347,7 @@ Exception\n\
    EPySyntaxWarning = class (EPyWarning);
    EPyRuntimeWarning = class (EPyWarning);
    EPyReferenceError = class (EPyStandardError);
- {$IFDEF MSWINDOWS}
+ {$IFDEF windows}
    EPyWindowsError = class (EPyOSError);
  {$ENDIF}
 
@@ -1576,7 +1583,7 @@ type
     PyExc_TabError: PPPyObject;
     PyExc_UnboundLocalError: PPPyObject;
     PyExc_UnicodeError: PPPyObject;
- {$IFDEF MSWINDOWS}
+ {$IFDEF windows}
     PyExc_WindowsError: PPPyObject;
  {$ENDIF}
     PyExc_Warning: PPPyObject;
@@ -3087,7 +3094,7 @@ function  PyType_HasFeature(AType : PPyTypeObject; AFlag : Integer) : Boolean;
 (*
     Checks whether the PythonVersion x.x is Registered
 *)
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
 function IsPythonVersionRegistered(PythonVersion : string;
   out InstallPath: string; out AllUserInstall: Boolean) : Boolean;
 {$ENDIF}
@@ -3110,7 +3117,7 @@ implementation
 
 {$R *.dcr} //AT
 
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
 uses Registry;
 {$ENDIF}
 
@@ -3165,7 +3172,7 @@ procedure TPythonInputOutput.Write( const str : IOString );
 
   procedure DropLine;
   begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
     if DelayWrites then
       AddWrite( FLine_Buffer )
     else
@@ -3284,31 +3291,33 @@ end;
 (*******************************************************)
 
 procedure TDynamicDll.DoOpenDll(const aDllName : String);
+var
+  S: String;
 begin
   if not IsHandleValid then
   begin
     FDllName := aDllName;
-    FDLLHandle :=
-    //AT dont use SafeLoadLibrary, use loadlib from dynlibs
-    LoadLibrary(
+    S := GetDllPath+DllName;
+
+    FDLLHandle := LoadLibrary(
       {$IFDEF windows}
-        PAnsiChar(AnsiString(GetDllPath+DllName))
+        PAnsiChar(AnsiString(S))
       {$ELSE}
-        aDllName //AT fix
+        S
       {$ENDIF}
-    );
+      );
   end;
 end;
 
 function  TDynamicDll.GetDllPath : String;
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
 var
   AllUserInstall: Boolean;
 {$ENDIF}
 begin
   Result := DllPath;
 
-  {$IFDEF MSWINDOWS}
+  {$IFDEF windows}
   if DLLPath = '' then begin
     IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
   end;
@@ -3333,17 +3342,16 @@ begin
   DoOpenDll(aDllName);
 
   if not IsHandleValid then begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
     s := Format('Error %d: Could not open Dll "%s"',[GetLastError, DllName]);
-{$ENDIF}
-{$IFDEF LINUX}
+{$else}
     s := Format('Error: Could not open Dll "%s"',[DllName]);
 {$ENDIF}
-    if FatalMsgDlg then
-{$IFDEF MSWINDOWS}
-      MessageBox( GetActiveWindow, PChar(s), 'Error', MB_TASKMODAL or MB_ICONSTOP );
-{$ENDIF}
-{$IFDEF LINUX}
+
+  if FatalMsgDlg then
+{$IFDEF windows}
+      MessageBox(GetActiveWindow, PChar(s), 'Error', MB_TASKMODAL or MB_ICONSTOP);
+{$else}
       WriteLn(ErrOutput, s);
 {$ENDIF}
 
@@ -3370,17 +3378,13 @@ begin
 end;
 
 function TDynamicDll.Import(const funcname: AnsiString; canFail : Boolean = True): Pointer;
-{$ifdef linux} //AT
-const
-  GetLastError = 0;
-{$endif}
 var
   E : EDllImportError;
 begin
   Result := GetProcAddress( FDLLHandle, PAnsiChar(funcname) );
   if (Result = nil) and canFail then begin
-    E := EDllImportError.CreateFmt('Error %d: could not map symbol "%s"', [GetLastError, funcname]);
-    E.ErrorCode := GetLastError;
+    E := EDllImportError.CreateFmt('Error: could not find symbol "%s"', [funcname]); //AT
+    //E.ErrorCode := GetLastError;
     E.WrongFunc := funcname;
     raise E;
   end;
@@ -3395,10 +3399,9 @@ end;
 
 function  TDynamicDll.IsHandleValid : Boolean;
 begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
   Result := (FDLLHandle >= 32);
-{$ENDIF}
-{$IFDEF LINUX}
+{$else}
   Result := FDLLHandle <> 0;
 {$ENDIF}
 end;
@@ -3443,13 +3446,11 @@ end;
 procedure TDynamicDll.Quit;
 begin
   if not( csDesigning in ComponentState ) then begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
     MessageBox( GetActiveWindow, PChar(GetQuitMessage), 'Error', MB_TASKMODAL or MB_ICONSTOP );
     ExitProcess( 1 );
-{$ENDIF}
-{$IFDEF LINUX}
+{$else}
     WriteLn(ErrOutput, GetQuitMessage);
-    //__exit( 1 ); //AT
     Application.Terminate; //AT
 {$ENDIF}
   end;
@@ -3498,9 +3499,9 @@ procedure TPythonInterface.AfterLoad;
 begin
   inherited;
 
-  FIsPython3000 := Pos('PYTHON3', UpperCase(DLLName)) > 0; //AT fix, Linux name is "libpython3.4.so"
-  FMajorVersion := StrToInt(DLLName[7 {$IFDEF LINUX}+3{$ENDIF}]);
-  FMinorVersion := StrToInt(DLLName[8 {$IFDEF LINUX}+4{$ENDIF}]); //AT fix
+  FIsPython3000 := Pos('PYTHON3', UpperCase(DLLName)) > 0; //AT fix, Linux: "libpython3.4.so"
+  FMajorVersion := StrToInt(DLLName[7 {$IFDEF unix}+3{$ENDIF}]);
+  FMinorVersion := StrToInt(DLLName[8 {$IFDEF unix}+4{$ENDIF}]); //AT
 
   if FIsPython3000 then
     FBuiltInModuleName := 'builtins'
@@ -3512,10 +3513,9 @@ begin
   except
     on E: Exception do begin
       if FatalMsgDlg then
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
         MessageBox( GetActiveWindow, PChar(E.Message), 'Error', MB_TASKMODAL or MB_ICONSTOP );
-{$ENDIF}
-{$IFDEF LINUX}
+{$else}
         WriteLn( ErrOutput, E.Message );
 {$ENDIF}
       if FatalAbort then Quit;
@@ -3617,7 +3617,7 @@ begin
   PyExc_TabError             := Import('PyExc_TabError');
   PyExc_UnboundLocalError    := Import('PyExc_UnboundLocalError');
   PyExc_UnicodeError         := Import('PyExc_UnicodeError');
-  {$IFDEF MSWINDOWS}
+  {$IFDEF windows}
     PyExc_WindowsError       := Import('PyExc_WindowsError');
   {$ENDIF}
   PyExc_Warning              := Import('PyExc_Warning');
@@ -4879,13 +4879,13 @@ begin
 end;
 
 procedure TPythonEngine.CheckRegistry;
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
 var
   key : String;
   path : String;
 {$ENDIF}
 begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
   try
     with TRegistry.Create(KEY_READ and not KEY_NOTIFY) do
       try
@@ -4975,7 +4975,7 @@ end;
 
 procedure TPythonEngine.InitWinConsole;
 begin
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
   FreeConsole;
   AllocConsole;
   SetConsoleTitle( 'Python console' );
@@ -5386,7 +5386,7 @@ begin
         raise Define( EPyKeyboardInterrupt.Create(''), s_type, s_value )
       else if (PyErr_GivenExceptionMatches(err_type, PyExc_ImportError^) <> 0) then
         raise Define( EPyImportError.Create(''), s_type, s_value )
-  {$IFDEF MSWINDOWS}
+  {$IFDEF windows}
       else if (PyErr_GivenExceptionMatches(err_type, PyExc_WindowsError^) <> 0) then
         raise Define( EPyWindowsError.Create(''), s_type, s_value )
   {$ENDIF}
@@ -6238,7 +6238,7 @@ end;
 function TPythonEngine.PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
 var
   _size : Integer;
-{$IFDEF LINUX}
+{$IFDEF unix}
   _ucs4Str : UCS4String;
 {$ENDIF}
 begin
@@ -6247,7 +6247,7 @@ begin
     _size := PySequence_Length(obj);
     if _size > 0 then
     begin
-{$IFDEF LINUX}
+{$IFDEF unix}
       // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
       SetLength(_ucs4Str, _size+1);
       if PyUnicode_AsWideChar(obj, @_ucs4Str[0], _size) <> _size then
@@ -6270,12 +6270,12 @@ begin
 end;
 
 function TPythonEngine.PyUnicode_FromWideString( const AString : UnicodeString) : PPyObject;
-{$IFDEF LINUX}
+{$IFDEF unix}
 var
   _ucs4Str : UCS4String;
 {$ENDIF}
 begin
-{$IFDEF LINUX}
+{$IFDEF unix}
   // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
   _ucs4Str := WideStringToUCS4String(AString);
   Result := PyUnicode_FromWideChar( {PWideChar}(@_ucs4Str[0]), Length(AString) );
@@ -6632,6 +6632,7 @@ end;
 
 function TEventDef.PythonEvent(pself,	args: PPyObject): PPyObject;
 begin
+  Result := nil;
   Owner.Container.CheckEngine;
   with Owner.Container.Engine do
   begin
@@ -9667,7 +9668,7 @@ begin
   end;
 end;
 
-{$IFDEF MSWINDOWS}
+{$IFDEF windows}
 function IsPythonVersionRegistered(PythonVersion : string;
   out InstallPath: string; out AllUserInstall: Boolean) : Boolean;
   // Python provides for All user and Current user installations
