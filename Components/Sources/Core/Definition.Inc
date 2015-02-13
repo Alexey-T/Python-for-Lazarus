@@ -242,7 +242,7 @@
             {$IFNDEF PYTHON24}
               {$IFNDEF PYTHON23}
         {---<START OF DEFAULT PYTHON VERSION>---}
-            {$DEFINE PYTHON25}
+                {$DEFINE PYTHON33}
         {---<END OF DEFAULT PYTHON VERSION>---}
               {$ENDIF}
             {$ENDIF}

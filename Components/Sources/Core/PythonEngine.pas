@@ -118,7 +118,6 @@ type
 {$ENDIF}
 
 
-
   TPythonVersionProp = packed record
     DllName      : String;
     RegVersion   : String;
@@ -128,63 +127,43 @@ type
 
 const
 {$ifdef windows}
-  PYTHON_KNOWN_VERSIONS: array[1..10] of TPythonVersionProp =
-  ( (DllName: 'python23.dll'; RegVersion: '2.3'; APIVersion: 1012; CanUseLatest: True),
-    (DllName: 'python24.dll'; RegVersion: '2.4'; APIVersion: 1012; CanUseLatest: True),
-    (DllName: 'python25.dll'; RegVersion: '2.5'; APIVersion: 1013; CanUseLatest: True),
+  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+    (
     (DllName: 'python26.dll'; RegVersion: '2.6'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python27.dll'; RegVersion: '2.7'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python30.dll'; RegVersion: '3.0'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python31.dll'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python32.dll'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True)
+    );
 {$endif}
 {$ifdef linux}
-  PYTHON_KNOWN_VERSIONS: array[1..10] of TPythonVersionProp =
-  ( (DllName: 'libpython2.3.so'; RegVersion: '2.3'; APIVersion: 1012; CanUseLatest: True),
-    (DllName: 'libpython2.4.so'; RegVersion: '2.4'; APIVersion: 1012; CanUseLatest: True),
-    (DllName: 'libpython2.5.so'; RegVersion: '2.5'; APIVersion: 1013; CanUseLatest: True),
+  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+    (
     (DllName: 'libpython2.6.so'; RegVersion: '2.6'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython2.7.so'; RegVersion: '2.7'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.0.so'; RegVersion: '3.0'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.1.so'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.2.so'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.3.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True)
+    );
 {$endif}
 {$ifdef darwin}
-  PYTHON_KNOWN_VERSIONS: array[1..1] of TPythonVersionProp =
-  ( (DllName: 'libpython3.4.dylib'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
+  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+    (
+    (DllName: 'libpython2.6.dylib'; RegVersion: '2.6'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython2.7.dylib'; RegVersion: '2.7'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.0.dylib'; RegVersion: '3.0'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.1.dylib'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.2.dylib'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.3.dylib'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.4.dylib'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True)
+    );
 {$endif}
 
-{$IFDEF PYTHON23}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 1;
-{$ENDIF}
-{$IFDEF PYTHON24}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 2;
-{$ENDIF}
-{$IFDEF PYTHON25}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 3;
-{$ENDIF}
-{$IFDEF PYTHON26}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 4;
-{$ENDIF}
-{$IFDEF PYTHON27}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 5;
-{$ENDIF}
-{$IFDEF PYTHON30}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 6;
-{$ENDIF}
-{$IFDEF PYTHON31}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 7;
-{$ENDIF}
-{$IFDEF PYTHON32}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 8;
-{$ENDIF}
-{$IFDEF PYTHON33}
-  COMPILED_FOR_PYTHON_VERSION_INDEX = 9;
-{$ENDIF}
+  COMPILED_FOR_PYTHON_VERSION_INDEX = High(PYTHON_KNOWN_VERSIONS);
 
   PYT_METHOD_BUFFER_INCREASE = 10;
   PYT_MEMBER_BUFFER_INCREASE = 10;
