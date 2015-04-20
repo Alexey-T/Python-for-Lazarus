@@ -1,0 +1,45 @@
+object fmMain: TfmMain
+  Left = 312
+  Height = 352
+  Top = 285
+  Width = 746
+  Caption = 'Python-Lazarus demo'
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.5'
+  Visible = True
+  object PythonEngine: TPythonEngine
+    AutoLoad = False
+    DllName = 'python25.dll'
+    APIVersion = 1013
+    RegVersion = '3.0'
+    FatalAbort = False
+    UseLastKnownVersion = False
+    InitScript.Strings = (
+      'import sys'
+      'print(''Python'', sys.version)'
+    )
+    IO = PythonInputOutput1
+    PyFlags = [pfIgnoreEnvironmentFlag]
+    OnAfterInit = PythonEngineAfterInit
+    left = 168
+    top = 184
+  end
+  object PythonInputOutput1: TPythonInputOutput
+    OnSendData = PythonInputOutput1SendData
+    OnSendUniData = PythonInputOutput1SendUniData
+    UnicodeIO = True
+    RawOutput = False
+    left = 200
+    top = 200
+  end
+  object PythonModule1: TPythonModule
+    Engine = PythonEngine
+    OnInitialization = PythonModule1Initialization
+    ModuleName = 'sw_api'
+    Errors = <>
+    left = 232
+    top = 216
+  end
+end

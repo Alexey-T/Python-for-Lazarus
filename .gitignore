@@ -25,3 +25,7 @@
 *.or
 
 FPC_Units/
+lib/
+backup/
+*.pyd
+*.lps
