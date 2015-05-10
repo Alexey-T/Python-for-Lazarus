@@ -2,13 +2,14 @@
 <CONFIG>
   <Package Version="4">
     <PathDelim Value="\"/>
-    <Name Value="P4DLaz"/>
+    <Name Value="python4lazarus_pkg"/>
+    <Type Value="RunAndDesignTime"/>
     <CompilerOptions>
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
-        <OtherUnitFiles Value="Sources;Sources\Core"/>
-        <UnitOutputDirectory Value="FPC_Units"/>
+        <OtherUnitFiles Value="Sources\Core"/>
+        <UnitOutputDirectory Value="out"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -21,21 +22,16 @@
           <UseExternalDbgSyms Value="True"/>
         </Debugging>
       </Linking>
-      <Other>
-        <CompilerPath Value="$(CompPath)"/>
-      </Other>
     </CompilerOptions>
     <Description Value="Python4Lazarus"/>
     <Version Major="1"/>
     <Files Count="5">
       <Item1>
         <Filename Value="Sources\Core\PythonEngine.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="PythonEngine"/>
       </Item1>
       <Item2>
         <Filename Value="Sources\Core\PythonGUIInputOutput.pas"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="PythonGUIInputOutput"/>
       </Item2>
       <Item3>
@@ -47,11 +43,11 @@
         <UnitName Value="TinyWideStrings"/>
       </Item4>
       <Item5>
-        <Filename Value="p4dlaz.pas"/>
-        <UnitName Value="P4DLaz"/>
+        <Filename Value="python4lazarus_register.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Python4Lazarus_register"/>
       </Item5>
     </Files>
-    <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
       <Item1>
         <PackageName Value="LCL"/>
@@ -62,9 +58,6 @@
         <MinVersion Major="1" Valid="True"/>
       </Item2>
     </RequiredPkgs>
-    <UsageOptions>
-      <UnitPath Value="$(PkgDir);Sources;Sources\Core"/>
-    </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>

@@ -150,7 +150,8 @@ begin
     Result := inherited ReceiveData
   else
   begin
-    InputQuery( 'Query from Python', 'Enter text', S);
+    S := '';
+    InputQuery( 'Query from Python', 'Text:', S);
     Result := AnsiString(S);
   end;
 end;
@@ -248,4 +249,4 @@ begin
   RegisterComponents('Python', [TPythonGUIInputOutput]);
 end;
 
-end.
+end.

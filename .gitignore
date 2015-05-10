@@ -29,3 +29,6 @@ lib/
 backup/
 *.pyd
 *.lps
+demo
+*.compiled
+/Components/out

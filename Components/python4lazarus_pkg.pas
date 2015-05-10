@@ -2,22 +2,21 @@
   This source is only used to compile and install the package.
  }
 
-unit P4DLaz;
+unit python4lazarus_pkg;
 
 interface
 
 uses
   PythonEngine, PythonGUIInputOutput, MethodCallBack, TinyWideStrings, 
-  LazarusPackageIntf;
+  Python4Lazarus_register, LazarusPackageIntf;
 
 implementation
 
 procedure Register;
 begin
-  RegisterUnit('PythonEngine', @PythonEngine.Register);
-  RegisterUnit('PythonGUIInputOutput', @PythonGUIInputOutput.Register);
+  RegisterUnit('Python4Lazarus_register', @Python4Lazarus_register.Register);
 end;
 
 initialization
-  RegisterPackage('P4DLaz', @Register);
+  RegisterPackage('python4lazarus_pkg', @Register);
 end.
