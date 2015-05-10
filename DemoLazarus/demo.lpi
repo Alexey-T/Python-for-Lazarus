@@ -28,13 +28,13 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="P4DLaz"/>
+        <PackageName Value="python4lazarus_pkg"/>
       </Item1>
       <Item2>
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="6">
       <Unit0>
         <Filename Value="demo.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -63,13 +63,9 @@
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="p_tree.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit5>
-      <Unit6>
         <Filename Value="p_props.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit6>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -80,7 +76,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\..\comp\atgroups;..\..\comp\python\Components\Sources"/>
+      <OtherUnitFiles Value="..\Components\Sources\Core"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
