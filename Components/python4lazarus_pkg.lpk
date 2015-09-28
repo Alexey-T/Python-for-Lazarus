@@ -8,7 +8,7 @@
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
-        <OtherUnitFiles Value="Sources\Core"/>
+        <OtherUnitFiles Value="Sources\Core;$(PkgOutDir)"/>
         <UnitOutputDirectory Value="out"/>
       </SearchPaths>
       <Parsing>
@@ -58,6 +58,9 @@
         <MinVersion Major="1" Valid="True"/>
       </Item2>
     </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>
