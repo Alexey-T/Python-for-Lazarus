@@ -11,6 +11,8 @@ uses
   p_str, p_py
   { you can add units after this };
 
+{$R *.res}
+
 begin
   Application.Title:= 'PyLazarus';
   RequireDerivedFormResource := True;
