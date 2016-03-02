@@ -72,6 +72,7 @@ uses
   Windows,
 {$ELSE}
   Types,
+  Dl, //AT
   DynLibs, //AT
   Forms, //AT for "Application.terminate"
 {$ENDIF}
@@ -1429,7 +1430,7 @@ type
     FAutoUnload         : Boolean;
     FFatalMsgDlg        : Boolean;
     FFatalAbort         : Boolean;
-    FDLLHandle          : THandle;
+    FDLLHandle          : PtrInt;
     FUseLastKnownVersion: Boolean;
     FOnBeforeLoad       : TNotifyEvent;
     FOnAfterLoad        : TNotifyEvent;
@@ -3278,13 +3279,12 @@ begin
     FDllName := aDllName;
     S := GetDllPath+DllName;
 
-    FDLLHandle := LoadLibrary(
-      {$IFDEF windows}
-        PAnsiChar(AnsiString(S))
-      {$ELSE}
-        S
-      {$ENDIF}
-      );
+    {$ifdef windows}
+    FDLLHandle := Windows.LoadLibrary(PChar(S));
+    {$else}
+    //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
+    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_LAZY+RTLD_GLOBAL));
+    {$endif}
   end;
 end;
 
