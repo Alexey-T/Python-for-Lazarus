@@ -3241,17 +3241,17 @@ end;
 
 function  TPythonInputOutput.GetCurrentThreadSlotIdx : Integer;
 var
-  thread_id : Longint;
+  thread_id : TObject;
   i : Integer;
 begin
-  thread_id := GetCurrentThreadId;
+  thread_id := TObject(GetCurrentThreadId);
   for i := 0 to FLinesPerThread.Count-1 do
-    if Longint(FLinesPerThread.Objects[i]) = thread_id then
+    if FLinesPerThread.Objects[i] = thread_id then
       begin
         Result := i;
         Exit;
       end;
-  Result := FLinesPerThread.AddObject( '', TObject(thread_id) );
+  Result := FLinesPerThread.AddObject( '', thread_id );
 end;
 
 function  TPythonInputOutput.GetCurrentThreadLine : IOString;
