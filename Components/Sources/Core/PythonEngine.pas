@@ -1482,6 +1482,9 @@ type
 //-------------------------------------------------------
 
 type
+
+  { TPythonInterface }
+
   TPythonInterface=class(TDynamicDll)
   private
     DLL_Py_GetBuildInfo:
@@ -1493,6 +1496,7 @@ type
 
     DLL_PyString_FromString:  function( str: PAnsiChar): PPyObject; cdecl;
     DLL_Py_FlushLine:procedure; cdecl;
+    procedure DetectPythonVersionFromLibName(const Str: string);
 
   protected
     FInitialized:    Boolean;
@@ -3474,14 +3478,30 @@ begin
   FAutoUnload := True;
 end;
 
+procedure TPythonInterface.DetectPythonVersionFromLibName(const Str: string);
+var
+  NPos: integer;
+begin
+  //Win: "python34.dll"
+  //Linux: "libpython3.4.so"
+  NPos := Pos('python', LowerCase(Str));
+  if NPos>0 then
+  begin
+    Inc(NPos, Length('python'));
+    FIsPython3000 := Str[NPos]='3';
+    FMajorVersion := StrToIntDef(Str[NPos], 3);
+    Inc(NPos);
+    if Str[NPos]='.' then
+      Inc(NPos);
+    FMinorVersion := StrToIntDef(Str[NPos], 3);
+  end;
+end;
+
 procedure TPythonInterface.AfterLoad;
 begin
   inherited;
 
-  FIsPython3000 := Pos('PYTHON3', UpperCase(DLLName)) > 0; //AT fix, Linux: "libpython3.4.so"
-  FMajorVersion := StrToInt(DLLName[7 {$IFDEF unix}+3{$ENDIF}]);
-  FMinorVersion := StrToInt(DLLName[8 {$IFDEF unix}+4{$ENDIF}]); //AT
-
+  DetectPythonVersionFromLibName(DLLName);
   if FIsPython3000 then
     FBuiltInModuleName := 'builtins'
   else
@@ -3493,7 +3513,7 @@ begin
     on E: Exception do begin
       if FatalMsgDlg then
 {$IFDEF windows}
-        MessageBox( GetActiveWindow, PChar(E.Message), 'Error', MB_TASKMODAL or MB_ICONSTOP );
+        MessageBox(GetActiveWindow(), PChar(E.Message), 'Python error', MB_OK+MB_ICONSTOP+MB_TASKMODAL);
 {$else}
         WriteLn( ErrOutput, E.Message );
 {$ENDIF}

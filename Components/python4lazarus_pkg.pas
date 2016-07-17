@@ -4,6 +4,7 @@
 
 unit python4lazarus_pkg;
 
+{$warn 5023 off : no warning about unused units}
 interface
 
 uses
