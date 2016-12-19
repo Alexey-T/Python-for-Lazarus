@@ -12,6 +12,7 @@ type
   { TfmMain }
   TfmMain = class(TForm)
     mnuHelpAbout: TMenuItem;
+    Panel1: TPanel;
     PythonEngine: TPythonEngine;
     PythonInputOutput1: TPythonInputOutput;
     PythonModule1: TPythonModule;
@@ -35,13 +36,9 @@ var
 implementation
 
 uses
-  LclType, FormConsole, p_py, p_props;
+  LclType, FormConsole, proc_py;
 
 {$R *.lfm}
-
-const
-  cSynVersion = '0.0.1';
-  cSynApiVersion = '0.0.0';
 
 const
   cPyLibraryWindows = 'python33.dll';
@@ -52,13 +49,13 @@ const
 function Py_app_version(Self, Args : PPyObject): PPyObject; cdecl;
 begin
   with GetPythonEngine do
-    Result:= PyString_FromString(cSynVersion);
+    Result:= PyString_FromString('1.0.0');
 end;
 
 function Py_app_api_version(Self, Args : PPyObject): PPyObject; cdecl;
 begin
   with GetPythonEngine do
-    Result:= PyString_FromString(cSynApiVersion);
+    Result:= PyString_FromString('1.100');
 end;
 
 { TfmMain }

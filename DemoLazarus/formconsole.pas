@@ -39,7 +39,7 @@ var
 implementation
 
 uses
-  LclType, PythonEngine, p_str;
+  LclType, PythonEngine, proc_py;
 
 {$R *.lfm}
 
