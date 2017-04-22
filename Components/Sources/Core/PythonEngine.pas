@@ -5808,7 +5808,7 @@ begin
         // detect if the variant supports this special property
         if Assigned(Disp) and (Disp.GetIDsOfNames(GUID_NULL, @wStr, 1, 0, @DispID) = S_OK) then
         begin
-          myInt := DeRefV.__asPPyObject__;  //Returns the address to PPyObject as integer. (See impl. in PythonAtom.pas)
+          myInt := PtrInt(DeRefV.__asPPyObject__);  //Returns the address to PPyObject as integer. (See impl. in PythonAtom.pas)
           Result := PPyObject(myInt);
           Py_XIncRef(Result);
         end
@@ -9654,6 +9654,7 @@ end;
 procedure MaskFPUExceptions(ExceptionsMasked : boolean;
   MatchPythonPrecision : Boolean);
 begin
+  {$ifndef CPUARM}
   if MatchPythonPrecision then begin
     if ExceptionsMasked then
       Set8087CW($1232 or $3F)
@@ -9665,6 +9666,7 @@ begin
     else
       Set8087CW($1332);
   end;
+  {$endif}
 end;
 
 {$IFDEF windows}
