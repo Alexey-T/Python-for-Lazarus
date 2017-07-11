@@ -26,9 +26,9 @@
 
 FPC_Units/
 lib/
+out/
 backup/
 *.pyd
 *.lps
 demo
 *.compiled
-/Components/out
