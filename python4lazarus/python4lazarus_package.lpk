@@ -2,7 +2,7 @@
 <CONFIG>
   <Package Version="4">
     <PathDelim Value="\"/>
-    <Name Value="python4lazarus_pkg"/>
+    <Name Value="python4lazarus_package"/>
     <Type Value="RunAndDesignTime"/>
     <CompilerOptions>
       <Version Value="11"/>

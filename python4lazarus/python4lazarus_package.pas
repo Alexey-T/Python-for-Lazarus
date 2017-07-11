@@ -2,8 +2,9 @@
   This source is only used to compile and install the package.
  }
 
-unit python4lazarus_pkg;
+unit python4lazarus_package;
 
+{$warn 5023 off : no warning about unused units}
 interface
 
 uses
@@ -18,5 +19,5 @@ begin
 end;
 
 initialization
-  RegisterPackage('python4lazarus_pkg', @Register);
+  RegisterPackage('python4lazarus_package', @Register);
 end.
