@@ -29,13 +29,13 @@
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="python4lazarus_pkg"/>
+        <PackageName Value="python4lazarus_package"/>
       </Item1>
       <Item2>
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="3">
       <Unit0>
         <Filename Value="demo.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -55,18 +55,6 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit2>
-      <Unit3>
-        <Filename Value="p_py.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="p_str.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="p_props.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
