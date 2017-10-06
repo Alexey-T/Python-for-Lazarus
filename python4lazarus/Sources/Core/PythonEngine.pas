@@ -151,6 +151,12 @@ const
     (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True)
     );
 {$endif}
+{$ifdef freebsd}
+  PYTHON_KNOWN_VERSIONS: array[1..1] of TPythonVersionProp =
+    (
+    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True)
+    );
+{$endif}
 {$ifdef darwin}
   PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
     (
