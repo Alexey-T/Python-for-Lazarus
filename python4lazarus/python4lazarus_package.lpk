@@ -4,6 +4,7 @@
     <PathDelim Value="\"/>
     <Name Value="python4lazarus_package"/>
     <Type Value="RunAndDesignTime"/>
+    <Author Value="Alexey Torgashin"/>
     <CompilerOptions>
       <Version Value="11"/>
       <PathDelim Value="\"/>
@@ -23,7 +24,7 @@
         </Debugging>
       </Linking>
     </CompilerOptions>
-    <Description Value="Python4Lazarus"/>
+    <Description Value="Wrapper for Python engine"/>
     <Version Major="1"/>
     <Files Count="5">
       <Item1>
@@ -51,11 +52,13 @@
     <RequiredPkgs Count="2">
       <Item1>
         <PackageName Value="LCL"/>
-        <MinVersion Major="1" Valid="True"/>
+        <MaxVersion Major="1"/>
+        <MinVersion Major="1"/>
       </Item1>
       <Item2>
         <PackageName Value="FCL"/>
-        <MinVersion Major="1" Valid="True"/>
+        <MaxVersion Major="1"/>
+        <MinVersion Major="1"/>
       </Item2>
     </RequiredPkgs>
     <UsageOptions>
