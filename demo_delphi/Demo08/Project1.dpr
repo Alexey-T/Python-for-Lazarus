@@ -3,11 +3,6 @@ program Project1;
 {$I Definition.Inc}
 
 uses
-  madExcept,
-  madLinkDisAsm,
-  madListHardware,
-  madListProcesses,
-  madListModules,
 {$IFDEF MSWINDOWS}
   Forms,
 {$ENDIF}

@@ -69,7 +69,6 @@ procedure TForm1.Button1Click(Sender: TObject);
 var
   ComArray : Variant;
 begin
-  {
   ComArray := VarArrayCreate([0, 3, 0, 2], varVariant);
   ComArray[0, 0] := 1;
   ComArray[0, 1] := 1.1;
@@ -83,15 +82,6 @@ begin
   ComArray[3, 0] := 4;
   ComArray[3, 1] := 4.4;
   ComArray[3, 2] := 'd';
-  }
-  ComArray:= VarArrayCreate([0, 2, 0, 1], varInteger);
-  ComArray[0, 0]:= 0;
-  ComArray[0, 1]:= 1;
-  ComArray[1, 0]:= 100;
-  ComArray[1, 1]:= 101;
-  ComArray[2, 0]:= 200;
-  ComArray[2, 1]:= 201;
-
   PythonModule1.SetVarFromVariant( 'L', ComArray );
   PythonEngine1.ExecStrings(Memo1.Lines);
   DisplayArrayVar( PythonModule1.GetVarAsVariant( 'L' ) );
