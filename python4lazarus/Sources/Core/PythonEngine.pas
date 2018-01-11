@@ -1703,6 +1703,7 @@ type
     PySys_SetArgv3000:    procedure( argc: Integer; argv: PPWideChar); cdecl;
 
     PyCFunction_New: function(md:PPyMethodDef;ob:PPyObject):PPyObject; cdecl;
+    PyCFunction_NewEx: function(md:PPyMethodDef;self, ob:PPyObject):PPyObject; cdecl;
 // Removed.  Use PyEval_CallObjectWithKeywords with third argument nil
 //    PyEval_CallObject: function(callable_obj, args:PPyObject):PPyObject; cdecl;
     PyEval_CallObjectWithKeywords:function (callable_obj, args, kw:PPyObject):PPyObject; cdecl;
@@ -3769,7 +3770,11 @@ begin
     PySys_SetArgv3000         := Import('PySys_SetArgv');
   Py_Exit                   := Import('Py_Exit');
 
-  PyCFunction_New           :=Import('PyCFunction_New');
+  if IsPython3000 then
+    PyCFunction_NewEx           :=Import('PyCFunction_NewEx')
+  else
+    PyCFunction_New           :=Import('PyCFunction_New');
+
   PyEval_CallObjectWithKeywords:=Import('PyEval_CallObjectWithKeywords');
   PyEval_GetFrame           :=Import('PyEval_GetFrame');
   PyEval_GetGlobals         :=Import('PyEval_GetGlobals');
@@ -8938,7 +8943,10 @@ begin
       FCreateFuncDef.ml_meth  := GetOfObjectCallBack( TCallBack(meth), 2, ctCDECL);
       FCreateFuncDef.ml_flags := METH_VARARGS;
       FCreateFuncDef.ml_doc   := PAnsiChar(FCreateFuncDoc);
-      FCreateFunc := Engine.PyCFunction_New(@FCreateFuncDef, nil);
+      if GetPythonEngine.IsPython3000 then
+        FCreateFunc := Engine.PyCFunction_NewEx(@FCreateFuncDef, nil, nil)
+      else
+        FCreateFunc := Engine.PyCFunction_New(@FCreateFuncDef, nil);
     end;
     Assert(Assigned(FCreateFunc));
   end;
