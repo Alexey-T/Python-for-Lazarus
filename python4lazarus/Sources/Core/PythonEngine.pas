@@ -6063,8 +6063,6 @@ begin
 end;
 
 function TPythonEngine.VarRecAsPyObject( v : TVarRec ) : PPyObject;
-var
-  buff : array [0..256] of AnsiChar;
 begin
   case v.VType of
     vtInteger:       Result := PyInt_FromLong( v.VInteger );
@@ -6074,7 +6072,7 @@ begin
     vtString:
     begin
       if Assigned(v.VString) then
-        Result := PyString_FromString( StrPCopy( buff, v.VString^) )
+        Result := PyString_FromString(PAnsiChar(AnsiString(v.VString^)))
       else
         Result := PyString_FromString( '' );
     end;
@@ -6200,7 +6198,7 @@ function TPythonEngine.ArrayToPyDict( items : array of const) : PPyObject;
       vtAnsiString:
         begin
           if Assigned(v.VAnsiString) then
-            Result := StrPas(PAnsiChar(Ansistring(v.VAnsiString)))
+            Result := Ansistring(v.VAnsiString)
           else
             Result := '';
         end;
