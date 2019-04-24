@@ -65,6 +65,11 @@ unit PythonEngine;
   {$ENDIF}
 {$ENDIF}
 
+{$ifdef linux} {$define _so_files} {$endif}
+{$ifdef freebsd} {$define _so_files} {$endif}
+{$ifdef solaris} {$define _so_files} {$endif}
+
+
 interface
 
 uses
@@ -142,7 +147,7 @@ const
     (DllName: 'python37.dll'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True)
     );
 {$endif}
-{$ifdef linux}
+{$ifdef _so_files}
   PYTHON_KNOWN_VERSIONS: array[1..10] of TPythonVersionProp =
     (
     (DllName: 'libpython2.6.so'; RegVersion: '2.6'; APIVersion: 1013; CanUseLatest: True),
@@ -151,15 +156,6 @@ const
     (DllName: 'libpython3.1.so'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.2.so'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.3.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.5.so'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.6.so'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.7.so'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True)
-    );
-{$endif}
-{$ifdef freebsd}
-  PYTHON_KNOWN_VERSIONS: array[1..4] of TPythonVersionProp =
-    (
     (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.5.so'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'libpython3.6.so'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
