@@ -9719,6 +9719,7 @@ procedure MaskFPUExceptions(ExceptionsMasked : boolean;
   MatchPythonPrecision : Boolean);
 begin
   {$ifndef CPUARM}
+  {$ifndef CPUAARCH64}
   if MatchPythonPrecision then begin
     if ExceptionsMasked then
       Set8087CW($1232 or $3F)
@@ -9730,6 +9731,7 @@ begin
     else
       Set8087CW($1332);
   end;
+  {$endif}
   {$endif}
 end;
 
