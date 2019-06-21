@@ -67,6 +67,7 @@ unit PythonEngine;
 
 {$ifdef linux} {$define _so_files} {$endif}
 {$ifdef freebsd} {$define _so_files} {$endif}
+{$ifdef netbsd} {$define _so_files} {$endif}
 {$ifdef solaris} {$define _so_files} {$endif}
 
 
