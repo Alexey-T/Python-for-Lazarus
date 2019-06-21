@@ -65,10 +65,9 @@ unit PythonEngine;
   {$ENDIF}
 {$ENDIF}
 
-{$ifdef linux} {$define _so_files} {$endif}
-{$ifdef freebsd} {$define _so_files} {$endif}
-{$ifdef netbsd} {$define _so_files} {$endif}
-{$ifdef solaris} {$define _so_files} {$endif}
+{$IF defined(LINUX) or (defined(BSD) and not defined(DARWIN)) or defined(SOLARIS)}
+  {$define _so_files}
+{$ENDIF}
 
 
 interface
