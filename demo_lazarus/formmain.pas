@@ -54,9 +54,11 @@ begin
 end;
 
 function Py_s1(Self, Args : PPyObject): PPyObject; cdecl;
+const
+  S0: string = 'begin.𠏽𠏽𠏽𠏽𠏽.end';
 begin
   with GetPythonEngine do
-    Result:= PyUnicode_FromWideString('1.0.𠏽𠏽𠏽𠏽𠏽.end');
+    Result:= PyString_FromString(PChar(S0));
 end;
 
 { TfmMain }
