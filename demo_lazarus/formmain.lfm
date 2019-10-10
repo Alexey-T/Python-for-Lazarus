@@ -9,7 +9,7 @@ object fmMain: TfmMain
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '1.7'
+  LCLVersion = '2.1.0.0'
   Visible = True
   object Panel1: TPanel
     Left = 0
@@ -37,23 +37,23 @@ object fmMain: TfmMain
     IO = PythonInputOutput1
     PyFlags = [pfIgnoreEnvironmentFlag]
     OnAfterInit = PythonEngineAfterInit
-    left = 168
-    top = 184
+    Left = 168
+    Top = 184
   end
   object PythonInputOutput1: TPythonInputOutput
     OnSendData = PythonInputOutput1SendData
     OnSendUniData = PythonInputOutput1SendUniData
     UnicodeIO = True
     RawOutput = False
-    left = 200
-    top = 200
+    Left = 200
+    Top = 200
   end
   object PythonModule1: TPythonModule
     Engine = PythonEngine
     OnInitialization = PythonModule1Initialization
     ModuleName = 'sw_api'
     Errors = <>
-    left = 232
-    top = 216
+    Left = 232
+    Top = 216
   end
 end

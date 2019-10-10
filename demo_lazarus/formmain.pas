@@ -41,10 +41,10 @@ uses
 {$R *.lfm}
 
 const
-  cPyLibraryWindows = 'python33.dll';
-  cPyLibraryLinux = 'libpython3.4m.so.1.0';
-  cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.4/lib/libpython3.4.dylib';
-  cPyZipWindows = 'python33.zip';
+  cPyLibraryWindows = 'python37.dll';
+  cPyLibraryLinux = 'libpython3.7m.so.1.0';
+  cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
+  cPyZipWindows = 'python37.zip';
 
 function Py_app_version(Self, Args : PPyObject): PPyObject; cdecl;
 begin
