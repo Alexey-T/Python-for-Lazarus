@@ -1,6 +1,7 @@
 unit FormMain;
 
 {$mode objfpc}{$H+}
+{$Codepage utf8}
 
 interface
 
@@ -46,16 +47,16 @@ const
   cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
   cPyZipWindows = 'python37.zip';
 
-function Py_app_version(Self, Args : PPyObject): PPyObject; cdecl;
+function Py_s0(Self, Args : PPyObject): PPyObject; cdecl;
 begin
   with GetPythonEngine do
     Result:= PyString_FromString('1.0.0');
 end;
 
-function Py_app_api_version(Self, Args : PPyObject): PPyObject; cdecl;
+function Py_s1(Self, Args : PPyObject): PPyObject; cdecl;
 begin
   with GetPythonEngine do
-    Result:= PyString_FromString('1.100');
+    Result:= PyUnicode_FromWideString('1.0.𠏽𠏽𠏽𠏽𠏽.end');
 end;
 
 { TfmMain }
@@ -78,8 +79,8 @@ procedure TfmMain.PythonModule1Initialization(Sender: TObject);
 begin
   with Sender as TPythonModule do
   begin
-    AddMethod('app_version', @Py_app_version, '');
-    AddMethod('app_api_version', @Py_app_api_version, '');
+    AddMethod('s0', @Py_s0, '');
+    AddMethod('s1', @Py_s1, '');
   end;
 end;
 
