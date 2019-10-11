@@ -3447,7 +3447,7 @@ function TDynamicDll.Import(const funcname: string; canFail : Boolean = True): P
 var
   E : EDllImportError;
 begin
-  Result := GetProcAddress( FDLLHandle, funcname );
+  Result := GetProcAddress( FDLLHandle, PChar(funcname) );
   if (Result = nil) and canFail then begin
     E := EDllImportError.CreateFmt('Error: could not find symbol "%s"', [funcname]); //AT
     //E.ErrorCode := GetLastError;
