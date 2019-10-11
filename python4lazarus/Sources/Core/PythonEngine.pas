@@ -6338,7 +6338,7 @@ begin
 {$IFDEF unix}
   // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
   _ucs4Str := WideStringToUCS4String(AString);
-  Result := PyUnicode_FromWideChar( {PWideChar}(@_ucs4Str[0]), Length(AString) );
+  Result := PyUnicode_FromWideChar( {PWideChar}(@_ucs4Str[0]), Length(_ucs4Str) );
 {$ELSE}
   Result := PyUnicode_FromWideChar( PWideChar(AString), Length(AString) );
 {$ENDIF}
