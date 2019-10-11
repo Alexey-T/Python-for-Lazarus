@@ -1497,7 +1497,7 @@ type
     FOnAfterLoad        : TNotifyEvent;
     FOnBeforeUnload     : TNotifyEvent;
 
-    function  Import(const funcname: AnsiString; canFail : Boolean = True): Pointer;
+    function  Import(const funcname: string; canFail : Boolean = True): Pointer;
     procedure Loaded; override;
     procedure BeforeLoad; virtual;
     procedure AfterLoad; virtual;
@@ -2179,9 +2179,9 @@ type
     FLock:                       TCriticalSection;
     FExecModule:                 AnsiString;
     FAutoFinalize:               Boolean;
-    FProgramName:                AnsiString;
+    FProgramName:                string;
     FProgramNameW:               UnicodeString;
-    FPythonHome:                 AnsiString;
+    FPythonHome:                 string;
     FPythonHomeW:                UnicodeString;
     FInitThreads:                Boolean;
     FOnPathInitialization:       TPathInitializationEvent;
@@ -2236,29 +2236,29 @@ type
     procedure  Finalize;
     procedure  Lock;
     procedure  Unlock;
-    procedure  SetPythonHome(const PythonHome: String);
+    procedure  SetPythonHome(const S: String);
     function   IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
     function   GetAttrString(obj: PPyObject; AName: PAnsiChar):PAnsiChar;
     function   CleanString(const s : string) : string;
-    function   Run_CommandAsString(const command : AnsiString; mode : Integer) : String;
-    function   Run_CommandAsObject(const command : AnsiString; mode : Integer) : PPyObject;
-    function   Run_CommandAsObjectWithDict(const command : AnsiString; mode : Integer; locals, globals : PPyObject) : PPyObject;
-    procedure  ExecString(const command : AnsiString); overload;
+    function   Run_CommandAsString(const command : string; mode : Integer) : String;
+    function   Run_CommandAsObject(const command : string; mode : Integer) : PPyObject; inline;
+    function   Run_CommandAsObjectWithDict(const command : string; mode : Integer; locals, globals : PPyObject) : PPyObject;
+    procedure  ExecString(const command : string); overload; inline;
     procedure  ExecStrings( strings : TStrings ); overload;
-    function   EvalString(const command : AnsiString) : PPyObject; overload;
-    function   EvalStringAsStr(const command : AnsiString) : String;
+    function   EvalString(const command : string) : PPyObject; overload; inline;
+    function   EvalStringAsStr(const command : string) : String; inline;
     function   EvalStrings( strings : TStrings ) : PPyObject; overload;
-    procedure  ExecString(const command : AnsiString; locals, globals : PPyObject ); overload;
+    procedure  ExecString(const command : string; locals, globals : PPyObject ); overload; inline;
     procedure  ExecStrings( strings : TStrings; locals, globals : PPyObject ); overload;
-    function   EvalString( const command : AnsiString; locals, globals : PPyObject ) : PPyObject; overload;
+    function   EvalString( const command : string; locals, globals : PPyObject ) : PPyObject; overload; inline;
     function   EvalStrings( strings : TStrings; locals, globals : PPyObject ) : PPyObject; overload;
     function   EvalStringsAsStr( strings : TStrings ) : String;
     function   EvalPyFunction(pyfunc, pyargs:PPyObject): Variant;
     function   EvalFunction(pyfunc:PPyObject; args: array of const): Variant;
     function   EvalFunctionNoArgs(pyfunc:PPyObject): Variant;
-    function   CheckEvalSyntax( const str : AnsiString ) : Boolean;
-    function   CheckExecSyntax( const str : AnsiString ) : Boolean;
-    function   CheckSyntax( const str : AnsiString; mode : Integer ) : Boolean;
+    function   CheckEvalSyntax( const str : string ) : Boolean; inline;
+    function   CheckExecSyntax( const str : string ) : Boolean; inline;
+    function   CheckSyntax( const str : string; mode : Integer ) : Boolean;
     procedure  RaiseError;
     function   PyObjectAsString( obj : PPyObject ) : String;
     procedure  DoRedirectIO;
@@ -3430,11 +3430,11 @@ begin
   inherited;
 end;
 
-function TDynamicDll.Import(const funcname: AnsiString; canFail : Boolean = True): Pointer;
+function TDynamicDll.Import(const funcname: string; canFail : Boolean = True): Pointer;
 var
   E : EDllImportError;
 begin
-  Result := GetProcAddress( FDLLHandle, PAnsiChar(funcname) );
+  Result := GetProcAddress( FDLLHandle, funcname );
   if (Result = nil) and canFail then begin
     E := EDllImportError.CreateFmt('Error: could not find symbol "%s"', [funcname]); //AT
     //E.ErrorCode := GetLastError;
@@ -4862,7 +4862,7 @@ begin
   end else begin
     if Assigned(Py_SetProgramName) then
     begin
-      FProgramName := AnsiString(ParamStr(0));
+      FProgramName := ParamStr(0);
       Py_SetProgramName(PAnsiChar(FProgramName));
     end
   end;
@@ -5117,10 +5117,10 @@ begin
   end; // of if
 end;
 
-procedure TPythonEngine.SetPythonHome(const PythonHome: String);
+procedure TPythonEngine.SetPythonHome(const S: String);
 begin
-  FPythonHomeW := PythonHome;
-  FPythonHome := UTF8Encode(PythonHome);
+  FPythonHomeW := S;
+  FPythonHome := S;
 end;
 
 function TPythonEngine.IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
@@ -5218,22 +5218,22 @@ begin
   end;
 end;
 
-function   TPythonEngine.EvalStringAsStr(const command : AnsiString) : String;
+function   TPythonEngine.EvalStringAsStr(const command : string) : String;
 begin
   Result := Run_CommandAsString( command, eval_input );
 end;
 
-function   TPythonEngine.EvalString(const command : AnsiString) : PPyObject;
+function   TPythonEngine.EvalString(const command : string) : PPyObject;
 begin
   Result := Run_CommandAsObject( command, eval_input );
 end;
 
-procedure TPythonEngine.ExecString(const command : AnsiString);
+procedure TPythonEngine.ExecString(const command : string);
 begin
   Py_XDecRef( Run_CommandAsObject( command, file_input ) );
 end;
 
-function   TPythonEngine.Run_CommandAsString(const command : AnsiString; mode : Integer) : String;
+function   TPythonEngine.Run_CommandAsString(const command : string; mode : Integer) : String;
 var
   v : PPyObject;
 begin
@@ -5243,12 +5243,12 @@ begin
   Py_XDECREF(v);
 end;
 
-function   TPythonEngine.Run_CommandAsObject(const command : AnsiString; mode : Integer) : PPyObject;
+function   TPythonEngine.Run_CommandAsObject(const command : string; mode : Integer) : PPyObject;
 begin
   Result := Run_CommandAsObjectWithDict(command, mode, nil, nil);
 end;
 
-function TPythonEngine.Run_CommandAsObjectWithDict(const command : AnsiString; mode : Integer; locals, globals : PPyObject) : PPyObject;
+function TPythonEngine.Run_CommandAsObjectWithDict(const command : string; mode : Integer; locals, globals : PPyObject) : PPyObject;
 var
   m : PPyObject;
   _locals, _globals : PPyObject;
@@ -5300,7 +5300,7 @@ begin
   Result := Run_CommandAsObject( CleanString( strings.Text ), eval_input );
 end;
 
-procedure TPythonEngine.ExecString(const command : AnsiString; locals, globals : PPyObject );
+procedure TPythonEngine.ExecString(const command : string; locals, globals : PPyObject );
 begin
   Py_XDecRef( Run_CommandAsObjectWithDict( command, file_input, locals, globals ) );
 end;
@@ -5325,7 +5325,7 @@ begin
   Result := Run_CommandAsString( CleanString( strings.Text ), eval_input );
 end;
 
-function TPythonEngine.CheckEvalSyntax( const str : AnsiString ) : Boolean;
+function TPythonEngine.CheckEvalSyntax( const str : string ) : Boolean;
 begin
   result := CheckSyntax( str, eval_input );
 end;
@@ -5335,7 +5335,7 @@ begin
   result := CheckSyntax( str, file_input );
 end;
 
-function TPythonEngine.CheckSyntax( const str : AnsiString; mode : Integer ) : Boolean;
+function TPythonEngine.CheckSyntax( const str : string; mode : Integer ) : Boolean;
 var
   n : PNode;
 begin
