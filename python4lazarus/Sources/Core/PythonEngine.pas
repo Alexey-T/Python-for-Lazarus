@@ -3163,9 +3163,11 @@ implementation
 
 {$R *.dcr} //AT
 
-{$IFDEF windows}
-uses Registry;
-{$ENDIF}
+uses
+  {$IFDEF windows}
+  Registry,
+  {$ENDIF}
+  Math;
 
 
 (*******************************************************)
@@ -9718,20 +9720,20 @@ end;
 procedure MaskFPUExceptions(ExceptionsMasked : boolean;
   MatchPythonPrecision : Boolean);
 begin
-  //this define is from fpcsrc/rtl/inc/mathh.inc
-  {$if defined(cpui8086) or defined(cpui386) or defined(cpux86_64)}
-  if MatchPythonPrecision then begin
-    if ExceptionsMasked then
-      Set8087CW($1232 or $3F)
+//this define is from fpcsrc/rtl/inc/mathh.inc
+{$if defined(cpui8086) or defined(cpui386) or defined(cpux86_64)}
+  if ExceptionsMasked then
+    SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide,
+      exOverflow, exUnderflow, exPrecision])
+  else
+    SetExceptionMask([exDenormalized, exUnderflow, exPrecision]);
+{$IFNDEF NEXTGEN}{$WARN SYMBOL_PLATFORM OFF}
+  if MatchPythonPrecision then
+      SetPrecisionMode(pmDouble)
     else
-      Set8087CW($1232);
-  end else begin
-    if ExceptionsMasked then
-      Set8087CW($1332 or $3F)
-    else
-      Set8087CW($1332);
-  end;
-  {$endif}
+      SetPrecisionMode(pmExtended);
+{$ENDIF !NEXTGEN}{$WARN SYMBOL_PLATFORM ON}
+{$endif}
 end;
 
 {$IFDEF windows}
