@@ -2239,7 +2239,7 @@ type
     procedure  SetPythonHome(const PythonHome: String);
     function   IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
     function   GetAttrString(obj: PPyObject; AName: PAnsiChar):PAnsiChar;
-    function   CleanString(const s : AnsiString) : AnsiString;
+    function   CleanString(const s : string) : string;
     function   Run_CommandAsString(const command : AnsiString; mode : Integer) : String;
     function   Run_CommandAsObject(const command : AnsiString; mode : Integer) : PPyObject;
     function   Run_CommandAsObjectWithDict(const command : AnsiString; mode : Integer; locals, globals : PPyObject) : PPyObject;
@@ -5142,18 +5142,18 @@ begin
   PyErr_Clear;
 end;
 
-function TPythonEngine.CleanString(const s : AnsiString) : AnsiString;
+function TPythonEngine.CleanString(const s : string) : string;
 var
   i : Integer;
 begin
   result := s;
   if s = '' then
     Exit;
-  i := Pos(AnsiString(CR),s);
+  i := Pos(CR,s);
   while i > 0 do
     begin
       Delete( result, i, 1 );
-      i := Pos(AnsiString(CR),result);
+      i := Pos(CR,result);
     end;
   if result[length(result)] <> LF then
     Insert( LF, result, length(result)+1 );
@@ -5292,12 +5292,12 @@ end;
 
 procedure TPythonEngine.ExecStrings( strings : TStrings );
 begin
-  Py_XDecRef( Run_CommandAsObject( CleanString( AnsiString(strings.Text) ), file_input ) );
+  Py_XDecRef( Run_CommandAsObject( CleanString( strings.Text ), file_input ) );
 end;
 
 function TPythonEngine.EvalStrings( strings : TStrings ) : PPyObject;
 begin
-  Result := Run_CommandAsObject( CleanString( AnsiString(strings.Text) ), eval_input );
+  Result := Run_CommandAsObject( CleanString( strings.Text ), eval_input );
 end;
 
 procedure TPythonEngine.ExecString(const command : AnsiString; locals, globals : PPyObject );
@@ -5307,7 +5307,7 @@ end;
 
 procedure TPythonEngine.ExecStrings( strings : TStrings; locals, globals : PPyObject );
 begin
-  Py_XDecRef( Run_CommandAsObjectWithDict( CleanString( AnsiString(strings.Text) ), file_input, locals, globals ) );
+  Py_XDecRef( Run_CommandAsObjectWithDict( CleanString( strings.Text ), file_input, locals, globals ) );
 end;
 
 function TPythonEngine.EvalString( const command : AnsiString; locals, globals : PPyObject ) : PPyObject;
@@ -5317,12 +5317,12 @@ end;
 
 function TPythonEngine.EvalStrings( strings : TStrings; locals, globals : PPyObject ) : PPyObject;
 begin
-  Result := Run_CommandAsObjectWithDict( CleanString( AnsiString(strings.Text) ), eval_input, locals, globals );
+  Result := Run_CommandAsObjectWithDict( CleanString( strings.Text ), eval_input, locals, globals );
 end;
 
 function TPythonEngine.EvalStringsAsStr( strings : TStrings ) : String;
 begin
-  Result := Run_CommandAsString( CleanString( AnsiString(strings.Text) ), eval_input );
+  Result := Run_CommandAsString( CleanString( strings.Text ), eval_input );
 end;
 
 function TPythonEngine.CheckEvalSyntax( const str : AnsiString ) : Boolean;
@@ -6713,7 +6713,7 @@ end;
 function TEventDef.GetDocString : AnsiString;
 begin
   Owner.Container.CheckEngine;
-  FTmpDocString := Owner.Container.Engine.CleanString(AnsiString(FDocString.Text));
+  FTmpDocString := Owner.Container.Engine.CleanString(FDocString.Text);
   Result := fTmpDocString;
 end;
 
@@ -7489,7 +7489,7 @@ begin
     begin
       if DocString.Text <> '' then
         begin
-          doc := PyString_FromString( PAnsiChar(CleanString(AnsiString(FDocString.Text))) );
+          doc := PyString_FromString( PAnsiChar(CleanString(FDocString.Text)) );
           PyObject_SetAttrString( FModule, '__doc__', doc );
           Py_XDecRef(doc);
           CheckError(False);
@@ -8727,7 +8727,7 @@ begin
       // Basic services
       if FDocString.Count > 0 then
         begin
-          FCurrentDocString := GetPythonEngine.CleanString(AnsiString(FDocString.Text));
+          FCurrentDocString := GetPythonEngine.CleanString(FDocString.Text);
           tp_doc := PAnsiChar(FCurrentDocString);
         end;
       tp_dealloc   := @PyObjectDestructor;
