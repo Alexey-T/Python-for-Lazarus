@@ -1854,7 +1854,6 @@ type
     PyOS_InterruptOccurred:function :integer; cdecl;
     PyObject_CallObject:function (ob,args:PPyObject):PPyObject; cdecl;
     PyObject_CallMethod : function ( obj : PPyObject; method, format : PAnsiChar {...}) : PPyObject; cdecl varargs;
-    PyObject_CallMethodStr: function ( obj : PPyObject; method, format, value : PAnsiChar ) : PPyObject; cdecl;
     PyObject_Compare: function (ob1,ob2:PPyObject):integer; cdecl;
     PyObject_RichCompare:function (ob1,ob2:PPyObject;opid:integer):PPyObject; cdecl;
     PyObject_RichCompareBool:function (ob1,ob2:PPyObject;opid:integer):Integer; cdecl;
@@ -3938,7 +3937,6 @@ begin
   PyOS_InterruptOccurred    :=Import('PyOS_InterruptOccurred');
   PyObject_CallObject       :=Import('PyObject_CallObject');
   PyObject_CallMethod       :=Import('PyObject_CallMethod');
-  PyObject_CallMethodStr    :=Import('PyObject_CallMethod');
   if not IsPython3000 then
     PyObject_Compare          :=Import('PyObject_Compare');
   PyObject_RichCompare      :=Import('PyObject_RichCompare');
