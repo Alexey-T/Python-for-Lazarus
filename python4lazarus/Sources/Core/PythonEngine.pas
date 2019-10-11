@@ -1052,6 +1052,11 @@ type
     n_child     : PNode;
   end;
 
+  PPyCompilerFlags = ^PyCompilerFlags;
+  PyCompilerFlags = {$IFNDEF CPUX64}packed{$ENDIF} record
+    flags : integer;
+  end;
+
   // From weakrefobject.h
 
   PPyWeakReference = ^PyWeakReference;
@@ -1944,7 +1949,8 @@ type
     PyThreadState_SetAsyncExc: function(t_id :LongInt; exc :PPyObject) : Integer; cdecl;
     Py_AtExit:function (proc: AtExitProc):integer; cdecl;
     //Py_Cleanup:procedure; cdecl;
-    Py_CompileString:function (s1,s2:PAnsiChar;i:integer):PPyObject; cdecl;
+    Py_CompileStringFlags:function (s1,s2:PAnsiChar;i:integer;flags:PPyCompilerFlags):PPyObject; cdecl;
+    Py_CompileStringExFlags:function (s1,s2:PAnsiChar;i:integer;flags:PPyCompilerFlags;optimize:integer):PPyObject; cdecl;
     Py_FatalError:procedure(s:PAnsiChar); cdecl;
     Py_FindMethod:function (md:PPyMethodDef;ob:PPyObject;key:PAnsiChar):PPyObject; cdecl;
     Py_FindMethodInChain:function (mc:PPyMethodChain;ob:PPyObject;key:PAnsiChar):PPyObject; cdecl;
@@ -1965,7 +1971,7 @@ type
     Py_GetPrefix                    : function : PAnsiChar; cdecl;
     Py_GetProgramName               : function : PAnsiChar; cdecl;
 
-    PyParser_SimpleParseString      : function ( str : PAnsiChar; start : Integer) : PNode; cdecl;
+    PyParser_SimpleParseStringFlags : function ( str : PAnsiChar; start, flags : Integer) : PNode; cdecl;
     PyNode_Free                     : procedure( n : PNode ); cdecl;
     PyErr_NewException              : function ( name : PAnsiChar; base, dict : PPyObject ) : PPyObject; cdecl;
     Py_Malloc                       : function ( size : NativeInt ) : Pointer;
@@ -2056,6 +2062,11 @@ type
     _Py_c_quot: Pointer;
     _Py_c_sum: Pointer;
 }
+
+  // Not exported in Python 3.8 and implemented as functions
+  function PyParser_SimpleParseString( str : PAnsiChar; start : Integer) : PNode; cdecl;
+  function Py_CompileString( s1,s2:PAnsiChar;i:integer) : PPyObject; cdecl;
+
   // functions redefined in Delphi
   procedure   Py_INCREF   ( op: PPyObject);
   procedure   Py_DECREF   ( op: PPyObject);
@@ -4044,18 +4055,18 @@ begin
   PyThreadState_SetAsyncExc :=Import('PyThreadState_SetAsyncExc');
   Py_AtExit                 :=Import('Py_AtExit');
   //Py_Cleanup                :=Import('Py_Cleanup');
-  Py_CompileString          :=Import('Py_CompileString');
   Py_FatalError             :=Import('Py_FatalError');
   if not IsPython3000 then begin
-    Py_FindMethod             :=Import('Py_FindMethod');
-    Py_FindMethodInChain      :=Import('Py_FindMethodInChain');
+    Py_FindMethod           :=Import('Py_FindMethod');
+    Py_FindMethodInChain    :=Import('Py_FindMethodInChain');
     DLL_Py_FlushLine        :=Import('Py_FlushLine');
+    _PyString_Resize        :=Import('_PyString_Resize');
+    Py_CompileStringFlags   :=Import('Py_CompileStringFlags');
+  end else begin
+    _PyString_Resize        :=Import('_PyBytes_Resize');
+    Py_CompileStringExFlags :=Import('Py_CompileStringExFlags');
   end;
   _PyObject_New             :=Import('_PyObject_New');
-  if not IsPython3000 then
-    _PyString_Resize          :=Import('_PyString_Resize')
-  else
-    _PyString_Resize          :=Import('_PyBytes_Resize');
   Py_Finalize                :=Import('Py_Finalize');
   if getProcAddress( FDLLHandle, 'PyCode_Addr2Line' ) <> nil then
     DLL_PyCode_Addr2Line     := Import('PyCode_Addr2Line');
@@ -4079,7 +4090,7 @@ begin
     Py_GetPythonHome         :=Import('Py_GetPythonHome');
   Py_GetPrefix               :=Import('Py_GetPrefix');
   Py_GetProgramName          :=Import('Py_GetProgramName');
-  PyParser_SimpleParseString :=Import('PyParser_SimpleParseString');
+  PyParser_SimpleParseStringFlags := Import('PyParser_SimpleParseStringFlags');
   PyNode_Free                :=Import('PyNode_Free');
   PyErr_NewException         :=Import('PyErr_NewException');
 /// jah 29-sep-2000 : updated for python 2.0
@@ -4116,6 +4127,19 @@ begin
   PyErr_SetInterrupt       := Import('PyErr_SetInterrupt');
   PyGILState_Ensure        := Import('PyGILState_Ensure');
   PyGILState_Release       := Import('PyGILState_Release');
+end;
+
+function TPythonInterface.Py_CompileString( s1,s2:PAnsiChar;i:integer):PPyObject; cdecl;
+begin
+  if IsPython3000 then
+    Result := Py_CompileStringExFlags(s1, s2, i, nil, -1)
+  else
+    Result := Py_CompileStringFlags(s1, s2, i, nil);
+end;
+
+function TPythonInterface.PyParser_SimpleParseString( str : PAnsiChar; start : integer) : PNode; cdecl;
+begin
+  Result := PyParser_SimpleParseStringFlags(str, start, 0);
 end;
 
 procedure TPythonInterface.Py_INCREF(op: PPyObject);
