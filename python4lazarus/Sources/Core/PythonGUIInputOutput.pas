@@ -134,7 +134,6 @@ end;
 
 procedure TPythonGUIInputOutput.SendUniData(const Data: UnicodeString);
 begin
-  //inherited; //AT
   if Assigned(FOnSendUniData) then
     inherited
   else
@@ -150,22 +149,20 @@ begin
     Result := inherited ReceiveData
   else
   begin
-    S := '';
-    InputQuery( 'Query from Python', 'Text:', S);
+    InputQuery( 'Query from Python', 'Enter text', S);
     Result := AnsiString(S);
   end;
 end;
 
 function TPythonGUIInputOutput.ReceiveUniData: UnicodeString;
-var
-  S: String;
+Var
+  S : string;
 begin
   if Assigned( FOnReceiveUniData ) then
     Result := inherited ReceiveUniData
   else
   begin
-    S := '';
-    InputQuery('Python prompt', 'Text:', S);
+    InputQuery( 'Query from Python', 'Enter text', S);
     Result := S;
   end;
 end;
