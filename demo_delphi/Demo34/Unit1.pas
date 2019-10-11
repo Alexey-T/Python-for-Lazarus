@@ -1,4 +1,4 @@
-unit Unit1;
+﻿unit Unit1;
 
 {$I Definition.Inc}
 
@@ -7,26 +7,32 @@ interface
 uses
   SysUtils, Classes,
   Windows, Messages, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ComCtrls,
+  StdCtrls, ExtCtrls, ComCtrls, PythonVersions,
   PythonEngine, PythonGUIInputOutput;
 
 type
   TForm1 = class(TForm)
     Splitter1: TSplitter;
     Memo1: TMemo;
-    PythonEngine1: TPythonEngine;
-    PythonModule1: TPythonModule;
-    PythonType1: TPythonType;
     Panel1: TPanel;
     Button1: TButton;
     PythonGUIInputOutput1: TPythonGUIInputOutput;
     Memo2: TMemo;
+    cbPyVersions: TComboBox;
+    Label1: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure PythonType1Initialization(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure cbPyVersionsSelect(Sender: TObject);
   private
-    { D�clarations priv�es }
+    { Déclarations privées }
+    PythonEngine1: TPythonEngine;
+    PythonModule1: TPythonModule;
+    PythonType1: TPythonType;
+    PyVersions: TPythonVersions;
   public
-    { D�clarations publiques }
+    { Déclarations publiques }
+    procedure CreatePythonComponents;
   end;
 
   // This is a Delphi class implementing a new Python type
@@ -66,6 +72,77 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TForm1.cbPyVersionsSelect(Sender: TObject);
+begin
+  CreatePythonComponents
+end;
+
+procedure TForm1.CreatePythonComponents;
+begin
+  if cbPyVersions.ItemIndex <0 then begin
+    ShowMessage('No Python version is selected');
+    Exit;
+  end;
+
+  // Destroy P4D components
+  FreeAndNil(PythonEngine1);
+  FreeAndNil(PythonType1);
+  FreeAndNil(PythonModule1);
+
+  { TPythonEngine }
+  PythonEngine1 := TPythonEngine.Create(Self);
+  PyVersions[cbPyVersions.ItemIndex].AssignTo(PythonEngine1);
+
+  PythonEngine1.IO := PythonGUIInputOutput1;
+
+
+  { TPythonModule }
+  PythonModule1 := TPythonModule.Create(Self);
+
+  PythonModule1.Name := 'PythonModule1';
+  PythonModule1.Engine := PythonEngine1;
+  PythonModule1.ModuleName := 'spam';
+  with PythonModule1.Errors.Add do begin
+    Name := 'PointError';
+    ErrorType := etClass;
+  end;
+  with PythonModule1.Errors.Add do begin
+    Name := 'EBadPoint';
+    ErrorType := etClass;
+    ParentClass.Name := 'PointError';
+  end;
+
+  { TPythonType }
+  PythonType1 := TPythonType.Create(Self);
+
+  PythonType1.Name := 'PythonType1';
+  PythonType1.Engine := PythonEngine1;
+  PythonType1.OnInitialization := PythonType1Initialization;
+  PythonType1.TypeName := 'Point';
+  PythonType1.Prefix := 'Create';
+  PythonType1.Services.Basic := [bsRepr,bsStr,bsGetAttrO,bsSetAttrO];
+  PythonType1.TypeFlags :=
+    [tpfHaveGetCharBuffer,tpfHaveSequenceIn,tpfHaveInplaceOps,
+    tpfHaveRichCompare,tpfHaveWeakRefs,tpfHaveIter,tpfHaveClass,tpfBaseType];
+  PythonType1.Module := PythonModule1;
+
+  PythonEngine1.LoadDll;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+Var
+  PyVersion : TPythonVersion;
+begin
+  PyVersions := GetRegisteredPythonVersions;
+  for PyVersion in PyVersions do
+    cbPyVersions.Items.Add(PyVersion.DisplayName);
+  if cbPyVersions.Items.Count > 0 then begin
+    cbPyVersions.ItemIndex := 0;
+    CreatePythonComponents;
+  end;
+end;
+
 
 // First, we need to initialize the property PyObjectClass with
 // the class of our Type object

@@ -6,13 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Variants,
-{$IFDEF MSWINDOWS}
   Windows, Messages, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, ComCtrls,
-{$ENDIF}
-{$IFDEF LINUX}
-  QGraphics, QControls, QForms, QDialogs, QExtCtrls, QStdCtrls, QComCtrls,
-{$ENDIF}
   PythonEngine, PythonGUIInputOutput, Contnrs;
 
 type
@@ -69,12 +64,7 @@ implementation
 
 uses VarPyth;
 
-{$IFDEF MSWINDOWS}
 {$R *.dfm}
-{$ENDIF}
-{$IFDEF LINUX}
-{$R *.xfm}
-{$ENDIF}
 
 procedure TMain.Log( const AText : String );
 begin
@@ -270,14 +260,12 @@ begin
   Assert( b+1 = big+1 );
   Assert( b*2 = big*2 );
   Assert( b div 2 = big div 2 );
-{$IFDEF PYTHON23_OR_HIGHER}
   c := VarPythonCreate(True);
   Assert(VarIsBool(c));
   Assert(VarIsTrue(c));
   c := VarPythonCreate(False);
   Assert(VarIsBool(c));
   Assert(not VarIsTrue(c));
-{$ENDIF}
 
   // Done!
   Log('Integer test was Ok.');
@@ -828,9 +816,7 @@ end;
 procedure TMain.btnTestDatesClick(Sender: TObject);
 var
   a, b, _timeMod : Variant;
-{$IFDEF PYTHON23_OR_HIGHER}
   c : Variant;
-{$ENDIF}
   _date, _date2 : TDateTime;
   _year, _month, _day : Word;
   _year2, _month2, _day2 : Word;
@@ -876,7 +862,6 @@ begin
   Assert( _min2 = _min );
   Assert( _sec2 = _sec );
 
-{$IFDEF PYTHON23_OR_HIGHER}
   // test new datetime module
   _timeMod := Import('datetime'); // get the datetime module of Python
   //or _timeMod := DatetimeModule; // get the datetime module of Python
@@ -1003,7 +988,6 @@ begin
   finally
     GetPythonEngine.DatetimeConversionMode := dcmToTuple;
   end;
-{$ENDIF}
   // Done!
   Log('Dates test was Ok.');
 end;

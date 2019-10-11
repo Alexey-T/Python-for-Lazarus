@@ -6,13 +6,8 @@ interface
 
 uses
   SysUtils, Classes,
-{$IFDEF MSWINDOWS}
   Windows, Messages, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls,
-{$ENDIF}
-{$IFDEF LINUX}
-  QForms, QDialogs, QStdCtrls, QControls, QExtCtrls,
-{$ENDIF}
   PythonEngine, PythonGUIInputOutput;
 
 type
@@ -43,9 +38,7 @@ type
     procedure PythonDelphiVar1GetData(Sender: TObject; var Data: Variant);
     procedure PythonDelphiVar1SetData(Sender: TObject; Data: Variant);
   private
-    { Déclarations privées }
   public
-    { Déclarations publiques }
   end;
 
   PyPointRec = record
@@ -170,9 +163,7 @@ begin
       else
         begin
           // Else check for a method
-          Result := Py_FindMethod( MethodsByName('PythonType1'), obj, key);
-          // or we could write, because it's quicker:
-          // Result := Py_FindMethod( Form1.PythonType1.MethodsData, obj, key);
+          Result := PyObject_GenericGetAttr(obj, PyString_FromString(key));
           if not Assigned(Result) then
             PyErr_SetString (PyExc_AttributeError^, PAnsiChar(Format('Unknown attribute "%s"',[key])));
         end;

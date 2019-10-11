@@ -6,12 +6,7 @@ interface
 
 uses
   Classes,
-{$IFDEF MSWINDOWS}
   Graphics, ExtCtrls,
-{$ENDIF}
-{$IFDEF LINUX}
-  QGraphics, QExtCtrls,
-{$ENDIF}
   PythonEngine;
 
 type
@@ -38,7 +33,7 @@ type
   public
     property value[i: integer]: integer read getvalue; default;
 
-    constructor Create( ainterp: PPyInterpreterState; script: TStrings;
+    constructor Create( AThreadExecMode: TThreadExecMode; script: TStrings;
                         module: TPythonModule; apyfuncname: string;
                         Box: TPaintBox; var SortArray: array of Integer);
 
@@ -56,7 +51,7 @@ end;
 
 { TSortThread }
 
-constructor TSortThread.Create( ainterp: PPyInterpreterState; script: TStrings;
+constructor TSortThread.Create( AThreadExecMode: TThreadExecMode; script: TStrings;
                                 module: TPythonModule; apyfuncname: string;
                                 Box: TPaintBox; var SortArray: array of Integer);
 begin
@@ -67,7 +62,7 @@ begin
   FSortArray := @SortArray;
   FSize := High(SortArray) - Low(SortArray) + 1;
   FreeOnTerminate := True;
-  InterpreterState := ainterp;
+  ThreadExecMode := AThreadExecMode;
   inherited Create(False);
 end;
 

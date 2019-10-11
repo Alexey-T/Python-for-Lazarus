@@ -6,17 +6,16 @@ interface
 
 uses
   SysUtils, Classes,
-{$IFDEF MSWINDOWS}
   Windows, Messages, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls,
-{$ENDIF}
-{$IFDEF LINUX}
-  QForms, QDialogs, QStdCtrls, QControls, QExtCtrls,
-{$ENDIF}
   PythonEngine, PythonGUIInputOutput;
 
 type
+
+  { TForm1 }
+
   TForm1 = class(TForm)
+    Edit1: TEdit;
     PythonEngine1: TPythonEngine;
     Memo1: TMemo;
     PythonType1: TPythonType;
@@ -30,7 +29,6 @@ type
     SaveDialog1: TSaveDialog;
     PythonDelphiVar1: TPythonDelphiVar;
     Button4: TButton;
-    Edit1: TEdit;
     PythonGUIInputOutput1: TPythonGUIInputOutput;
     Memo2: TMemo;
     procedure Button1Click(Sender: TObject);
@@ -43,9 +41,9 @@ type
     procedure PythonDelphiVar1GetData(Sender: TObject; var Data: Variant);
     procedure PythonDelphiVar1SetData(Sender: TObject; Data: Variant);
   private
-    { Déclarations privées }
+    { Dï¿½clarations privï¿½es }
   public
-    { Déclarations publiques }
+    { Dï¿½clarations publiques }
   end;
 
   PyPointRec = record
@@ -170,9 +168,7 @@ begin
       else
         begin
           // Else check for a method
-          Result := Py_FindMethod( MethodsByName('PythonType1'), obj, key);
-          // or we could write, because it's quicker:
-          // Result := Py_FindMethod( Form1.PythonType1.MethodsData, obj, key);
+          Result := PyObject_GenericGetAttr(obj, PyString_FromString(key));
           if not Assigned(Result) then
             PyErr_SetString (PyExc_AttributeError^, PAnsiChar(Format('Unknown attribute "%s"',[key])));
         end;

@@ -1,13 +1,12 @@
-program VarPythUnitTest;
+program Demo10;
 
 uses
   Forms,
-  fmMain in 'fmMain.pas' {TMain};
+  fmMain in 'fmMain.pas' {Main};
 
 {$R *.res}
 
 begin
-  ReportMemoryLeaksOnShutdown := True;
   Application.Initialize;
   Application.CreateForm(TMain, Main);
   Application.Run;
