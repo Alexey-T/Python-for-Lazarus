@@ -1958,6 +1958,10 @@ type
     Py_GetCopyright                 : function : PAnsiChar; cdecl;
     Py_GetExecPrefix                : function : PAnsiChar; cdecl;
     Py_GetPath                      : function : PAnsiChar; cdecl;
+    Py_SetPythonHome                : procedure (home : PAnsiChar); cdecl;
+    Py_GetPythonHome                : function : PAnsiChar; cdecl;
+    Py_SetPythonHome3000            : procedure (home : PWideChar); cdecl;
+    Py_GetPythonHome3000            : function : PWideChar; cdecl;
     Py_GetPrefix                    : function : PAnsiChar; cdecl;
     Py_GetProgramName               : function : PAnsiChar; cdecl;
 
@@ -2177,6 +2181,8 @@ type
     FAutoFinalize:               Boolean;
     FProgramName:                AnsiString;
     FProgramNameW:               UnicodeString;
+    FPythonHome:                 AnsiString;
+    FPythonHomeW:                UnicodeString;
     FInitThreads:                Boolean;
     FOnPathInitialization:       TPathInitializationEvent;
     FOnSysPathInit:              TSysPathInitEvent;
@@ -2230,6 +2236,7 @@ type
     procedure  Finalize;
     procedure  Lock;
     procedure  Unlock;
+    procedure  SetPythonHome(const PythonHome: String);
     function   IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
     function   GetAttrString(obj: PPyObject; AName: PAnsiChar):PAnsiChar;
     function   CleanString(const s : AnsiString) : AnsiString;
@@ -4062,6 +4069,14 @@ begin
   Py_GetCopyright            :=Import('Py_GetCopyright');
   Py_GetExecPrefix           :=Import('Py_GetExecPrefix');
   Py_GetPath                 :=Import('Py_GetPath');
+  if IsPython3000 then
+    Py_SetPythonHome3000     :=Import('Py_SetPythonHome')
+  else
+    Py_SetPythonHome         :=Import('Py_SetPythonHome');
+  if IsPython3000 then
+    Py_GetPythonHome3000     :=Import('Py_GetPythonHome')
+  else
+    Py_GetPythonHome         :=Import('Py_GetPythonHome');
   Py_GetPrefix               :=Import('Py_GetPrefix');
   Py_GetProgramName          :=Import('Py_GetProgramName');
   PyParser_SimpleParseString :=Import('PyParser_SimpleParseString');
@@ -4852,6 +4867,12 @@ begin
     end
   end;
   AssignPyFlags;
+  if FPythonHomeW<>'' then begin
+    if IsPython3000 then
+      Py_SetPythonHome3000(PWideChar(FPythonHomeW))
+    else
+      Py_SetPythonHome(PAnsiChar(FPythonHome));
+  end;
   Py_Initialize;
   FInitialized := True;
   FIORedirected := False;
@@ -5094,6 +5115,12 @@ begin
       raise Exception.Create('You can''t modify Python flags after it has been initialized');
     FPyFlags := Value;
   end; // of if
+end;
+
+procedure TPythonEngine.SetPythonHome(const PythonHome: String);
+begin
+  FPythonHomeW := PythonHome;
+  FPythonHome := UTF8Encode(PythonHome);
 end;
 
 function TPythonEngine.IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
