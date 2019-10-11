@@ -356,7 +356,7 @@ Type
 
     TMyClass = class(TInterfacedObject, IFreeNotification)
     private
-      fFreeNotifImpl : TFreeNotificationImpl;
+      fFreeNotifImpl : IFreeNotification;
     protected
       property FreeNotifImpl : IFreeNotification read fFreeNotifImpl implements IFreeNotification;
     public
@@ -738,9 +738,9 @@ Type
 
   {
      The main component of this unit.
-     Method TObjectToPyObject wraps Delphi objects into Python objects
-     Method RegisterDelphiClass can be used to extend its functionality.
-     Method RegisterEventHandler can be used to add event handling functionality
+     Method Wrap wraps Delphi objects into Python objects
+     Method RegisterDelphiWrapper can be used to extend its functionality.
+     Method EventHandlers.RegisterHandler can be used to add event handling functionality
   }
   {$IF not Defined(FPC) and (CompilerVersion >= 23)}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
@@ -1106,12 +1106,12 @@ end;
 {$IFDEF FPC}
 function GetPropValue(Instance: TObject; PropInfo: PPropInfo): Variant;
 begin
-  Result := Variants.GetPropValue(Instance, PropInfo^.Name);
+  Result := Variants.GetPropValue(Instance, PropInfo, False);
 end;
 
 procedure SetPropValue(Instance: TObject; PropInfo: PPropInfo; const Value: Variant);
 begin
-  Variants.SetPropValue(Instance, PropInfo^.Name, Value);
+  Variants.SetPropValue(Instance, PropInfo, Value);
 end;
 {$ENDIF}
 
@@ -1517,7 +1517,7 @@ function TPyDelphiObject.GetAttrO(key: PPyObject): PPyObject;
     Finally call inherited which calls PyObject_GenericGetAttr
 *)
 var
-  Name: ShortString;
+  Name: string;
 {$IFNDEF FPC}
   Info: PMethodInfoHeader;
 {$ENDIF}
@@ -1526,7 +1526,7 @@ var
 begin
   Result := nil;
   if GetPythonEngine.PyString_Check(Key) then
-    Name := ShortString(GetPythonEngine.PyString_AsDelphiString(Key))
+    Name := GetPythonEngine.PyString_AsDelphiString(Key)
   else
     Name := '';
 
@@ -1554,7 +1554,7 @@ begin
   else{$ENDIF} if Assigned(DelphiObject) and (Name <> '') then
   begin
     // Not a  method, try a property.
-    PropInfo := GetPropInfo(DelphiObject, string(Name));
+    PropInfo := GetPropInfo(DelphiObject, Name);
     if PropInfo <> nil then
     begin
       // we have a property
@@ -2689,7 +2689,10 @@ begin
     begin
       d := PyModule_GetDict(FModule.Module);
       Assert(Assigned(d));
-      PyDict_SetItemString( d, AMethodDef^.ml_name, PyCFunction_New(AMethodDef, nil));
+      if IsPython3000 then
+        PyDict_SetItemString( d, AMethodDef^.ml_name, PyCFunction_NewEx(AMethodDef, nil, nil))
+      else
+        PyDict_SetItemString( d, AMethodDef^.ml_name, PyCFunction_New(AMethodDef, nil));
     end;
 end;
 
@@ -2948,7 +2951,7 @@ begin
       if Index >= 0 then break;
       DelphiClass := DelphiClass.ClassParent;
     end;
-    Assert(Index >= 0, 'Internal Error in PyDelphiWrapper.TObjectToPyObject'); // shouldn't happen
+    Assert(Index >= 0, 'Internal Error in PyDelphiWrapper.Wrap'); // shouldn't happen
 
     Result := TRegisteredClass(fClassRegister[Index]).PythonType.CreateInstance;
     with PythonToDelphi(Result) as TPyDelphiObject do begin
