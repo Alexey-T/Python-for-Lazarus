@@ -55,7 +55,7 @@
   Error!! This unit is not supported in 64bit due dirty casts of pointers to DISPIDS
 {$ENDIF}
 
-unit PythonAtom;// deprecated 'consider using VarPyth instead';
+unit PythonAtom deprecated 'consider using VarPyth instead';
 
 interface
 

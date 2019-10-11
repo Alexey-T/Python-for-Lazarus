@@ -26,7 +26,7 @@
 
 {$I Definition.Inc}
 
-unit AtomPythonEngine;// deprecated 'consider using VarPyth instead';
+unit AtomPythonEngine deprecated 'consider using VarPyth instead';
 
 interface
 
