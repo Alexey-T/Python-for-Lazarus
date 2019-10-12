@@ -55,7 +55,7 @@ end;
 
 function Py_s1(Self, Args : PPyObject): PPyObject; cdecl;
 const
-  S0: string = 'begin.𠏽𠏽𠏽𠏽𠏽.end';
+  S0: string = 'begin.Привет.end';
 begin
   with GetPythonEngine do
     Result:= PyString_FromString(PChar(S0));
