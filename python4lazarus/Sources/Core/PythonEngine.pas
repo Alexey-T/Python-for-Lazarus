@@ -3629,7 +3629,8 @@ begin
   if (fMajorVersion > 3) or ((fMajorVersion = 3) and (fMinorVersion >= 3)) then
     Result := ''
   else if APIVersion >= 1011 then
-    Result := 'UCS2'
+    // https://github.com/Alexey-T/Python-for-Lazarus/issues/16
+    Result := {$ifdef windows} 'UCS2' {$else} 'UCS4' {$endif}
   else
     Result := '';
 end;
