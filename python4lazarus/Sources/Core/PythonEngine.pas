@@ -3624,19 +3624,18 @@ begin
     raise Exception.Create('Python is not properly initialized' );
 end;
 
+// https://github.com/Alexey-T/Python-for-Lazarus/issues/16
 function  TPythonInterface.GetUnicodeTypeSuffix : String;
 begin
   if (fMajorVersion > 3) or ((fMajorVersion = 3) and (fMinorVersion >= 3)) then
     Result := ''
   else
   if APIVersion >= 1011 then
-    // https://github.com/Alexey-T/Python-for-Lazarus/issues/16
     Result :=
-      {$ifdef windows} 'UCS2'
+      {$if defined(windows) or defined(darwin) or defined(solaris)}
+      'UCS2'
       {$else}
-        {$ifdef darwin} 'UCS2'
-        {$else} 'UCS4'
-        {$endif}
+      'UCS4'
       {$endif}
   else
     Result := '';
