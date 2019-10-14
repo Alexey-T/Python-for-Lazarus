@@ -3628,9 +3628,16 @@ function  TPythonInterface.GetUnicodeTypeSuffix : String;
 begin
   if (fMajorVersion > 3) or ((fMajorVersion = 3) and (fMinorVersion >= 3)) then
     Result := ''
-  else if APIVersion >= 1011 then
+  else
+  if APIVersion >= 1011 then
     // https://github.com/Alexey-T/Python-for-Lazarus/issues/16
-    Result := {$ifdef windows} 'UCS2' {$else} 'UCS4' {$endif}
+    Result :=
+      {$ifdef windows} 'UCS2'
+      {$else}
+        {$ifdef darwin} 'UCS2'
+        {$else} 'UCS4'
+        {$endif}
+      {$endif}
   else
     Result := '';
 end;
