@@ -65,7 +65,7 @@ unit PythonEngine;
   {$ENDIF}
 {$ENDIF}
 
-{$IF defined(LINUX) or (defined(BSD) and not defined(DARWIN)) or defined(SOLARIS)}
+{$IF defined(LINUX) or (defined(BSD) and not defined(DARWIN)) or defined(SOLARIS) or defined(HAIKU)}
   {$define _so_files}
 {$ENDIF}
 
