@@ -7867,9 +7867,25 @@ begin
   Result := 0;
 end;
 
+
 function  TPyObject.RichCompare( obj : PPyObject; Op : TRichComparisonOpcode) : PPyObject;
+Var
+  Res : Boolean;
 begin
-  Result := nil;
+  Res := False;
+  case Op of
+    pyLT: Res := Compare(obj) < 0;
+    pyLE: Res := Compare(obj) <= 0;
+    pyEQ: Res := Compare(obj) = 0;
+    pyNE: Res := Compare(obj) <> 0;
+    pyGT: Res := Compare(obj) > 0;
+    pyGE: Res := Compare(obj) >= 0;
+  end;
+  if Res then
+    Result := PPyObject(GetPythonEngine.Py_True)
+  else
+    Result := PPyObject(GetPythonEngine.Py_False);
+  GetPythonEngine.Py_INCREF( Result );
 end;
 
 function  TPyObject.Iter : PPyObject;
