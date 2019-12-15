@@ -85,13 +85,6 @@ uses
   SysUtils,
   SyncObjs,
   Variants,
-{$IFDEF DELPHI2005_OR_HIGHER}
-{$IFNDEF UNICODE}
-  WideStrings,
-{$ENDIF}
-{$ELSE}
-  TinyWideStrings,
-{$ENDIF}
   MethodCallBack;
 
 //#######################################################
@@ -101,12 +94,6 @@ uses
 //#######################################################
 
 type
-{$IFNDEF UNICODE}
-  TUnicodeStringList = TWideStringList;
-{$ELSE}
-  TUnicodeStringList = TStringList;
-{$ENDIF}
-
 {$IFNDEF FPC}
   {$IF CompilerVersion < 21}
     NativeInt = integer;
@@ -1406,7 +1393,7 @@ type
   TReceiveUniDataEvent = procedure (Sender: TObject; var Data : UnicodeString ) of object;
   IOChar = WideChar;
   IOString = UnicodeString;
-  TIOStringList = TUnicodeStringList;
+  TIOStringList = TStringList;
 
   {$IF not Defined(FPC) and (CompilerVersion >= 23)}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
