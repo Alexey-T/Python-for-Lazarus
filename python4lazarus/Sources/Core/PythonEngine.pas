@@ -77,9 +77,9 @@ uses
   Windows,
 {$ELSE}
   Types,
-  Dl, //AT
-  DynLibs, //AT
-  Forms, //AT for "Application.terminate"
+  Dl,
+  DynLibs,
+  Forms, //for Application.Terminate
 {$ENDIF}
   Classes,
   SysUtils,
@@ -102,7 +102,6 @@ uses
 
 type
 {$IFNDEF UNICODE}
-  UnicodeString = WideString;
   TUnicodeStringList = TWideStringList;
 {$ELSE}
   TUnicodeStringList = TStringList;
@@ -115,11 +114,6 @@ type
   {$IFEND}
   PNativeInt = ^NativeInt;
 {$ELSE}
-  {$IF DEFINED(FPC_FULLVERSION) and (FPC_FULLVERSION >= 20500)}
-  {$ELSE}
-    NativeInt = integer;
-    NativeUInt = Cardinal;
-  {$IFEND}
   PNativeInt = ^NativeInt;
 {$ENDIF}
 
