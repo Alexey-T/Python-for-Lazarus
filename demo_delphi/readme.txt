@@ -33,4 +33,3 @@ Demo31	Using WrapDelphi to access Delphi Form attributes (Requires Delphi5 or la
 Demo32	Demo08 revisited using WrapDelphi (Requires Delphi7 or later)
 Demo33  Using Threads inside Python
 Demo34  Dynamically creating, destroying and recreating PythonEngine.  Uses PythonVersions
-Demo35  Evaluate a Python expression
