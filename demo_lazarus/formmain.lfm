@@ -9,7 +9,7 @@ object fmMain: TfmMain
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.0.0.4'
   Visible = True
   object Panel1: TPanel
     Left = 0
@@ -25,9 +25,9 @@ object fmMain: TfmMain
   end
   object PythonEngine: TPythonEngine
     AutoLoad = False
-    DllName = 'python25.dll'
+    DllName = 'libpython3.7.so'
     APIVersion = 1013
-    RegVersion = '3.0'
+    RegVersion = '3.7'
     FatalAbort = False
     UseLastKnownVersion = False
     InitScript.Strings = (
@@ -37,23 +37,23 @@ object fmMain: TfmMain
     IO = PythonInputOutput1
     PyFlags = [pfIgnoreEnvironmentFlag]
     OnAfterInit = PythonEngineAfterInit
-    Left = 168
-    Top = 184
+    left = 168
+    top = 184
   end
   object PythonInputOutput1: TPythonInputOutput
     OnSendData = PythonInputOutput1SendData
     OnSendUniData = PythonInputOutput1SendUniData
     UnicodeIO = True
     RawOutput = False
-    Left = 200
-    Top = 200
+    left = 200
+    top = 200
   end
   object PythonModule1: TPythonModule
     Engine = PythonEngine
     OnInitialization = PythonModule1Initialization
     ModuleName = 'demo'
     Errors = <>
-    Left = 232
-    Top = 216
+    left = 232
+    top = 216
   end
 end
