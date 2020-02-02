@@ -31,8 +31,8 @@ object Form1: TForm1
     OnClick = Button1Click
     TabOrder = 2
   end
-  object PythonGUIInputOutput1: TPythonGUIInputOutput
-    OnReceiveData = PythonGUIInputOutput1ReceiveData
+  object PythonGUIInputOutput: TPythonGUIInputOutput
+    OnReceiveData = PythonGUIInputOutputReceiveData
     UnicodeIO = False
     RawOutput = False
     Output = Memo2
@@ -41,11 +41,12 @@ object Form1: TForm1
   end
   object PythonEngine: TPythonEngine
     AutoLoad = False
+    DllName = 'libpython3.8.so'
     APIVersion = 1013
     RegVersion = '3.7'
     FatalAbort = False
     UseLastKnownVersion = False
-    IO = PythonGUIInputOutput1
+    IO = PythonGUIInputOutput
     PyFlags = [pfIgnoreEnvironmentFlag]
     left = 208
     top = 384

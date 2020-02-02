@@ -17,10 +17,10 @@ type
     Memo1: TMemo;
     Memo2: TMemo;
     PythonEngine: TPythonEngine;
-    PythonGUIInputOutput1: TPythonGUIInputOutput;
+    PythonGUIInputOutput: TPythonGUIInputOutput;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure PythonGUIInputOutput1ReceiveData(Sender: TObject;
+    procedure PythonGUIInputOutputReceiveData(Sender: TObject;
       var Data: AnsiString);
   private
     procedure DoPy_InitEngine;
@@ -40,14 +40,14 @@ uses
 
 
 const
-  //cPyLibraryWindows = 'python37.dll';
+  cPyLibraryWindows = 'python37.dll';
   cPyLibraryLinux = 'libpython3.7m.so.1.0';
-  //cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
-  //cPyZipWindows = 'python37.zip';
+  cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
+  cPyZipWindows = 'python37.zip';
 
 { TForm1 }
 
-procedure TForm1.PythonGUIInputOutput1ReceiveData(Sender: TObject;
+procedure TForm1.PythonGUIInputOutputReceiveData(Sender: TObject;
   var Data: AnsiString);
 begin
 
