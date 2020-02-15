@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 233
+  Left = 1003
   Height = 500
-  Top = 175
+  Top = 799
   Width = 800
   ActiveControl = Button1
   Caption = 'Demo of Python'
@@ -11,8 +11,7 @@ object Form1: TForm1
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
-  LCLVersion = '1.8.0.6'
-  Visible = False
+  LCLVersion = '2.0.0.4'
   object Splitter1: TSplitter
     Cursor = crVSplit
     Left = 0
@@ -93,7 +92,7 @@ object Form1: TForm1
     end
     object Edit1: TEdit
       Left = 500
-      Height = 20
+      Height = 22
       Top = 8
       Width = 150
       TabOrder = 4
