@@ -1,70 +1,138 @@
 object Form1: TForm1
-  Left = 1412
-  Height = 492
-  Top = 175
-  Width = 381
-  Caption = 'Form1'
-  ClientHeight = 492
-  ClientWidth = 381
+  Left = 1238
+  Height = 375
+  Top = 138
+  Width = 544
+  VertScrollBar.Range = 197
+  ActiveControl = Button1
+  Caption = 'Demo03 of Python'
+  ClientHeight = 375
+  ClientWidth = 525
+  Color = clBackground
+  Font.Color = clWindowText
+  Font.Height = 11
+  Font.Name = 'MS Sans Serif'
+  Font.Pitch = fpVariable
   OnCreate = FormCreate
   LCLVersion = '2.0.0.4'
-  object Memo1: TMemo
-    Left = 54
-    Height = 146
-    Top = 48
-    Width = 250
-    TabOrder = 0
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 3
+    Top = 161
+    Width = 525
+    Align = alTop
+    ResizeAnchor = akTop
   end
-  object Memo2: TMemo
-    Left = 56
-    Height = 144
-    Top = 216
-    Width = 248
+  object Memo1: TMemo
+    Left = 0
+    Height = 175
+    Top = 164
+    Width = 525
+    Align = alClient
+    Lines.Strings = (
+      'test.Value = 10'
+      'print (''test'', test.Value)'
+      ''
+      'test.Value = [1,2,3]'
+      'print (test)'
+    )
+    ScrollBars = ssBoth
     TabOrder = 1
   end
-  object Button1: TButton
-    Left = 64
-    Height = 25
-    Top = 384
-    Width = 128
-    Caption = 'Evaluate script'
-    OnClick = Button1Click
+  object Panel1: TPanel
+    Left = 0
+    Height = 36
+    Top = 339
+    Width = 525
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 36
+    ClientWidth = 525
+    TabOrder = 0
+    object Button1: TButton
+      Left = 6
+      Height = 25
+      Top = 8
+      Width = 115
+      Caption = 'Execute script'
+      OnClick = Button1Click
+      TabOrder = 0
+    end
+    object Button2: TButton
+      Left = 168
+      Height = 25
+      Top = 8
+      Width = 91
+      Caption = 'Load script...'
+      OnClick = Button2Click
+      TabOrder = 1
+    end
+    object Button3: TButton
+      Left = 264
+      Height = 25
+      Top = 8
+      Width = 89
+      Caption = 'Save script...'
+      OnClick = Button3Click
+      TabOrder = 2
+    end
+    object Button4: TButton
+      Left = 368
+      Height = 25
+      Top = 8
+      Width = 105
+      Caption = 'Show var content'
+      OnClick = Button4Click
+      TabOrder = 3
+    end
+  end
+  object Memo2: TMemo
+    Left = 0
+    Height = 161
+    Top = 0
+    Width = 525
+    Align = alTop
     TabOrder = 2
   end
-  object Button2: TButton
-    Left = 64
-    Height = 25
-    Top = 432
-    Width = 152
-    Caption = 'Show var content'
-    OnClick = Button2Click
-    TabOrder = 3
-  end
-  object PythonGUIInputOutput: TPythonGUIInputOutput
-    OnReceiveData = PythonGUIInputOutputReceiveData
-    UnicodeIO = False
-    RawOutput = False
-    Output = Memo2
-    left = 264
-    top = 384
-  end
-  object PythonEngine: TPythonEngine
+  object PythonEngine1: TPythonEngine
     AutoLoad = False
     DllName = 'libpython3.8.so'
     APIVersion = 1013
     RegVersion = '3.7'
-    FatalAbort = False
     UseLastKnownVersion = False
-    IO = PythonGUIInputOutput
-    PyFlags = [pfIgnoreEnvironmentFlag]
-    left = 208
-    top = 384
+    InitScript.Strings = (
+      'import sys'
+      'print (''Python Dll: '', sys.version)'
+      'print (sys.copyright)'
+      'print'
+    )
+    IO = PythonGUIInputOutput1
+    PyFlags = [pfUseClassExceptionsFlag]
+    left = 32
   end
-  object PythonDelphiVar: TPythonDelphiVar
-    Engine = PythonEngine
+  object OpenDialog1: TOpenDialog
+    Title = 'Open'
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 176
+  end
+  object SaveDialog1: TSaveDialog
+    Title = 'Save As'
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 208
+  end
+  object PythonDelphiVar1: TPythonDelphiVar
+    Engine = PythonEngine1
     Module = '__main__'
     VarName = 'test'
-    left = 317
-    top = 384
+    left = 128
+  end
+  object PythonGUIInputOutput1: TPythonGUIInputOutput
+    UnicodeIO = False
+    RawOutput = False
+    Output = Memo2
+    left = 64
   end
 end

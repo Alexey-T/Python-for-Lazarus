@@ -5,30 +5,35 @@ unit Unit1;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  SynHighlighterPython, PythonGUIInputOutput, PythonEngine;
+  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, ExtCtrls, PairSplitter, PythonGUIInputOutput, PythonEngine;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
+    PythonEngine1: TPythonEngine;
+    PythonGUIInputOutput1: TPythonGUIInputOutput;
+    PythonDelphiVar1: TPythonDelphiVar;
     Memo1: TMemo;
     Memo2: TMemo;
-    PythonDelphiVar: TPythonDelphiVar;
-    PythonEngine: TPythonEngine;
-    PythonGUIInputOutput: TPythonGUIInputOutput;
+    Panel1: TPanel;
+    Splitter1: TSplitter;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
+    procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-    procedure PythonGUIInputOutputReceiveData(Sender: TObject;
-      var Data: AnsiString);
+    procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     procedure DoPy_InitEngine;
   public
-
+    { Déclarations publiques }
   end;
 
 var
@@ -41,43 +46,38 @@ uses
 
 {$R *.lfm}
 
-
 const
   cPyLibraryWindows = 'python37.dll';
   cPyLibraryLinux = 'libpython3.7m.so.1.0';
   cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
   cPyZipWindows = 'python37.zip';
 
-{ TForm1 }
-
-procedure TForm1.PythonGUIInputOutputReceiveData(Sender: TObject;
-  var Data: AnsiString);
-begin
-
-end;
-
 procedure TForm1.Button1Click(Sender: TObject);
-var
- Result : PPyObject;
- cmd : TStrings;
 begin
- with PythonEngine do
-    begin
-       cmd := Memo1.Lines;
-       Result := EvalStrings(cmd);
-       if Assigned(Result) then
-           begin
-             Memo2.Lines.Add('%s',[PyObjectAsString(Result)]);
-             Py_DECREF(Result);
-           end
-        else
-           Memo2.Lines.Add('Could not evaluate the script');
-    end;
+     PythonEngine1.ExecStrings( Memo1.Lines );
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  ShowMessage( 'Value = ' + PythonDelphiVar.ValueAsString );
+  with OpenDialog1 do
+    begin
+      if Execute then
+        Memo1.Lines.LoadFromFile( FileName );
+    end;
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  with SaveDialog1 do
+    begin
+      if Execute then
+        Memo1.Lines.SaveToFile( FileName );
+    end;
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+  ShowMessage( 'Value = ' + PythonDelphiVar1.ValueAsString );
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -93,10 +93,9 @@ begin
     {$ifdef windows} cPyLibraryWindows {$endif}
     {$ifdef linux} cPyLibraryLinux {$endif}
     {$ifdef darwin} cPyLibraryMac {$endif} ;
-  PythonEngine.DllPath:= ExtractFileDir(S);
-  PythonEngine.DllName:= ExtractFileName(S);
-  PythonEngine.LoadDll;
+  PythonEngine1.DllPath:= ExtractFileDir(S);
+  PythonEngine1.DllName:= ExtractFileName(S);
+  PythonEngine1.LoadDll;
 end;
 
 end.
-
