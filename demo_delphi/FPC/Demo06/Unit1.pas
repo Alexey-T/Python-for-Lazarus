@@ -1,12 +1,12 @@
 unit Unit1;
 
-{$mode objfpc}{$H+}
+{$I Definition.Inc}
 
 interface
 
 uses
   SysUtils, Classes,
-  Messages, Graphics, Controls, Forms, Dialogs,
+  Windows, Messages, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls,
   PythonEngine, PythonGUIInputOutput;
 
