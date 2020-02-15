@@ -73,9 +73,5 @@ begin
   PythonEngine1.LoadDll;
 end;
 
-
-
-
-
 end.
 
