@@ -1,0 +1,177 @@
+object Form1: TForm1
+  Left = 1118
+  Height = 375
+  Top = 82
+  Width = 544
+  VertScrollBar.Range = 200
+  ActiveControl = Button1
+  Caption = 'Demo 07 of Python'
+  ClientHeight = 375
+  ClientWidth = 525
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = 11
+  Font.Name = 'MS Sans Serif'
+  Font.Pitch = fpVariable
+  OnCreate = FormCreate
+  LCLVersion = '2.0.0.4'
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 3
+    Top = 129
+    Width = 525
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object Memo1: TMemo
+    Left = 0
+    Height = 175
+    Top = 132
+    Width = 525
+    Align = alClient
+    Lines.Strings = (
+      'import sys'
+      'print (''Version: '', sys.version)'
+      'import spam'
+      'print (spam.foo(''hello world'', 1))'
+      'p = spam.CreatePoint( 10, 25 )'
+      'print (''Point: '', p)'
+      'p.x = 58'
+      'print (p.x, p)'
+      'p.OffsetBy( 5, 5 )'
+      'print (p)'
+      'print (''Current value of var test is: '', test)'
+      'test.Value = (''New value set by Python'')'
+      'print (spam.getdouble())'
+      'print (spam.getdouble2())'
+    )
+    ScrollBars = ssBoth
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 68
+    Top = 307
+    Width = 525
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 68
+    ClientWidth = 525
+    TabOrder = 0
+    object Button1: TButton
+      Left = 6
+      Height = 25
+      Top = 8
+      Width = 115
+      Caption = 'Execute script'
+      OnClick = Button1Click
+      TabOrder = 0
+    end
+    object Button2: TButton
+      Left = 168
+      Height = 25
+      Top = 8
+      Width = 91
+      Caption = 'Load script...'
+      OnClick = Button2Click
+      TabOrder = 1
+    end
+    object Button3: TButton
+      Left = 264
+      Height = 25
+      Top = 8
+      Width = 89
+      Caption = 'Save script...'
+      OnClick = Button3Click
+      TabOrder = 2
+    end
+    object Button4: TButton
+      Left = 368
+      Height = 25
+      Top = 8
+      Width = 89
+      Caption = 'Show var test'
+      OnClick = Button4Click
+      TabOrder = 3
+    end
+    object Edit1: TEdit
+      Left = 368
+      Height = 22
+      Top = 32
+      Width = 161
+      TabOrder = 4
+      Text = 'Edit1'
+    end
+  end
+  object Memo2: TMemo
+    Left = 0
+    Height = 129
+    Top = 0
+    Width = 525
+    Align = alTop
+    TabOrder = 2
+  end
+  object PythonEngine1: TPythonEngine
+    AutoLoad = False
+    DllName = 'libpython3.8.so'
+    APIVersion = 1013
+    RegVersion = '3.7'
+    UseLastKnownVersion = False
+    InitScript.Strings = (
+      'import sys'
+      'print (''Python Dll: '', sys.version)'
+      'print (sys.copyright)'
+      'print'
+    )
+    IO = PythonGUIInputOutput1
+    PyFlags = [pfUseClassExceptionsFlag]
+    left = 8
+  end
+  object PythonType1: TPythonType
+    Engine = PythonEngine1
+    OnInitialization = PythonType1Initialization
+    TypeName = 'Point'
+    Prefix = 'Create'
+    Services.Basic = [bsGetAttr, bsSetAttr, bsRepr, bsStr]
+    Services.InplaceNumber = []
+    Services.Number = []
+    Services.Sequence = []
+    Services.Mapping = []
+    left = 72
+  end
+  object PythonModule1: TPythonModule
+    Engine = PythonEngine1
+    OnInitialization = PythonModule1Initialization
+    ModuleName = 'spam'
+    Errors = <>
+    left = 104
+  end
+  object OpenDialog1: TOpenDialog
+    Title = 'Open'
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 176
+  end
+  object SaveDialog1: TSaveDialog
+    Title = 'Save As'
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 208
+  end
+  object PythonDelphiVar1: TPythonDelphiVar
+    Engine = PythonEngine1
+    Module = '__main__'
+    VarName = 'test'
+    OnGetData = PythonDelphiVar1GetData
+    OnSetData = PythonDelphiVar1SetData
+    OnChange = PythonDelphiVar1Change
+    left = 136
+  end
+  object PythonGUIInputOutput1: TPythonGUIInputOutput
+    UnicodeIO = True
+    RawOutput = False
+    Output = Memo2
+    left = 40
+  end
+end
