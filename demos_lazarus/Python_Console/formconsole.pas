@@ -10,13 +10,13 @@ uses
 
 type
   { TfmConsole }
+
   TfmConsole = class(TForm)
     edConsole: TEdit;
     memoConsole: TMemo;
     panelConsole: TPanel;
     PopupMenu1: TPopupMenu;
-    procedure edConsoleKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure edConsoleKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edConsoleKeyPress(Sender: TObject; var Key: char);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -44,8 +44,8 @@ uses
 {$R *.lfm}
 
 const
-  cPyConsoleMaxLines = 1000;
-  cPyConsolePrompt = '>>> ';
+  cMaxLines = 1000;
+  cPrompt = '>>> ';
 
 
 procedure TfmConsole.DoLogConsoleLine(const Str: string);
@@ -53,7 +53,7 @@ begin
   with memoConsole do
   begin
     Lines.BeginUpdate;
-    while Lines.Count>cPyConsoleMaxLines do
+    while Lines.Count>cMaxLines do
       Lines.Delete(0);
     Lines.Add(Str);
     Lines.EndUpdate;
@@ -66,7 +66,7 @@ procedure TfmConsole.DoExecuteConsoleLine(Str: string);
 var
   i: integer;
 begin
-  DoLogConsoleLine(cPyConsolePrompt+Str);
+  DoLogConsoleLine(cPrompt+Str);
   edConsole.Text:= '';
 
   i:= FList.IndexOf(Str);
@@ -134,9 +134,9 @@ begin
     if (n>=0) and (n<Lines.Count) then
     begin
       s:= Lines[n];
-      if SBegin(s, cPyConsolePrompt) then
+      if Copy(s, 1, Length(cPrompt))=cPrompt then
       begin
-        Delete(s, 1, Length(cPyConsolePrompt));
+        Delete(s, 1, Length(cPrompt));
         DoExecuteConsoleLine(s);
       end;
     end;
