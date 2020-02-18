@@ -5860,13 +5860,11 @@ begin
         s := AnsiString(DeRefV);
         Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
       end;
-   {$IFDEF UNICODE}
     varUString:
       begin
        wStr := DeRefV;
         Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
       end;
-    {$ENDIF}
   else
     if VarType(DeRefV) and varArray <> 0 then
       begin
@@ -6098,7 +6096,6 @@ begin
         else
           Result := PyUnicode_FromWideString( '' );
       end;
-    {$IFDEF UNICODE}
     vtUnicodeString:
       begin
         if Assigned(v.VUnicodeString) then
@@ -6106,7 +6103,6 @@ begin
         else
           Result := PyUnicode_FromWideString( '' );
       end;
-    {$ENDIF}
   else
     Raise Exception.Create('Argument type not allowed');
   end;
@@ -6211,7 +6207,6 @@ function TPythonEngine.ArrayToPyDict( items : array of const) : PPyObject;
         else
           Result := '';
       end;
-      {$IFDEF UNICODE}
       vtUnicodeString:
       begin
         if Assigned(v.VUnicodeString) then
@@ -6219,7 +6214,6 @@ function TPythonEngine.ArrayToPyDict( items : array of const) : PPyObject;
         else
           Result := '';
       end;
-      {$ENDIF}
     else
       Raise Exception.Create('Argument type not allowed');
     end;
@@ -9115,9 +9109,7 @@ begin
             (t = varOleStr) or
             (t = varBoolean) or
             (t = varByte) or
-            {$IFDEF UNICODE}
             (t = varUString) or
-            {$ENDIF}
             (t = varString);
 end;
 
