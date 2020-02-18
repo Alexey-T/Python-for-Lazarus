@@ -1543,7 +1543,6 @@ type
     FMajorVersion:   integer;
     FMinorVersion:   integer;
     FBuiltInModuleName: String;
-    function GetInitialized: Boolean;
 
     procedure AfterLoad; override;
     function  GetQuitMessage : String; override;
@@ -2097,7 +2096,7 @@ type
   procedure MapDll;
 
   // Public properties
-  property Initialized : Boolean read GetInitialized;
+  property Initialized : Boolean read FInitialized;
   property Finalizing : Boolean read FFinalizing;
   property IsPython3000 : Boolean read FIsPython3000;
   property MajorVersion : integer read FMajorVersion;
@@ -3538,6 +3537,7 @@ var
   i : Integer;
 begin
   inherited;
+  FInitialized := False;
   i := COMPILED_FOR_PYTHON_VERSION_INDEX;
   DllName     := PYTHON_KNOWN_VERSIONS[i].DllName;
   FAPIVersion := PYTHON_KNOWN_VERSIONS[i].APIVersion;
@@ -3592,14 +3592,6 @@ end;
 function  TPythonInterface.GetQuitMessage : String;
 begin
   Result := Format( 'Python could not be properly initialized. We must quit.', [DllName]);
-end;
-
-function TPythonInterface.GetInitialized: Boolean;
-begin
-  if Assigned(Py_IsInitialized) then
-    Result := Py_IsInitialized() <> 0
-  else
-    Result := FInitialized;
 end;
 
 procedure TPythonInterface.CheckPython;
@@ -4633,7 +4625,6 @@ var
 begin
   inherited;
   FLock                    := TCriticalSection.Create;
-  FInitialized             := False;
   FInitScript              := TstringList.Create;
   FClients                 := TList.Create;
   FRedirectIO              := True;
@@ -4703,6 +4694,7 @@ begin
       Py_Finalize;
     finally
       FFinalizing := False;
+      FInitialized := False;
     end;
   // Detach our clients, when engine is beeing destroyed or one of its clients.
   canDetachClients := csDestroying in ComponentState;
@@ -4899,7 +4891,10 @@ begin
       Py_SetPythonHome(PAnsiChar(FPythonHome));
   end;
   Py_Initialize;
-  FInitialized := True;
+  if Assigned(Py_IsInitialized) then
+    FInitialized := Py_IsInitialized() <> 0
+  else
+    FInitialized := True;
   FIORedirected := False;
   InitSysPath;
   SetProgramArgs;
