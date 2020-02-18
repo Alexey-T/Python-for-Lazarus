@@ -3160,6 +3160,18 @@ uses
   {$ENDIF}
   Math;
 
+function _IsBufferAscii(buf: PAnsiChar): boolean; inline;
+begin
+  if buf=nil then
+    exit(true);
+  while buf^ <> #0 do
+  begin
+    if Ord(buf^) >= 128 then
+      exit(false);
+    Inc(buf);
+  end;
+  Result := true;
+end;
 
 (*******************************************************)
 (**                                                   **)
@@ -6571,12 +6583,16 @@ var
 begin
   if IsPython3000 then
   begin
-    _text := UnicodeString(str);
-    Result := PyUnicode_FromWideString(_text);
-    {
-    // faster, but gives Py exception if called on bad utf8 buffer
-    Result := PyUnicode_FromString(str);
-    }
+    if _IsBufferAscii(str) then
+    begin
+      //faster, but gives Py exception if called on bad utf8 buffer
+      Result := PyUnicode_FromString(str);
+    end
+    else
+    begin
+      _text := UnicodeString(str);
+      Result := PyUnicode_FromWideString(_text);
+    end;
   end
   else
     Result := DLL_PyString_FromString(str);
