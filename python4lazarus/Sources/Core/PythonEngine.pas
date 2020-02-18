@@ -5853,12 +5853,7 @@ begin
           wStr := ''
         else
           wStr := DeRefV;
-      {$IFDEF PREFER_UNICODE}
         Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
-      {$ELSE}
-        s := wStr;
-        Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
-      {$ENDIF}
       end;
     varString:
       begin
@@ -5869,12 +5864,7 @@ begin
     varUString:
       begin
        wStr := DeRefV;
-      {$IFDEF PREFER_UNICODE}
         Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
-      {$ELSE}
-        s := wStr;
-        Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
-      {$ENDIF}
       end;
     {$ENDIF}
   else
