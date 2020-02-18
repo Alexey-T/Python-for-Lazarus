@@ -6583,16 +6583,8 @@ var
 begin
   if IsPython3000 then
   begin
-    if _IsBufferAscii(str) then
-    begin
-      //faster, but gives Py exception if called on bad utf8 buffer
-      Result := PyUnicode_FromString(str);
-    end
-    else
-    begin
-      _text := UnicodeString(str);
-      Result := PyUnicode_FromWideString(_text);
-    end;
+    _text := UnicodeString(str);
+    Result := PyUnicode_FromWideString(_text);
   end
   else
     Result := DLL_PyString_FromString(str);
