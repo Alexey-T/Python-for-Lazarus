@@ -1,0 +1,171 @@
+object Form1: TForm1
+  Left = 1228
+  Height = 422
+  Top = 124
+  Width = 544
+  Caption = 'Demo of Python'
+  ClientHeight = 422
+  ClientWidth = 544
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnCreate = FormCreate
+  LCLVersion = '2.0.0.4'
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 3
+    Top = 137
+    Width = 544
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object Memo1: TMemo
+    Left = 0
+    Height = 214
+    Top = 140
+    Width = 544
+    Align = alClient
+    Lines.Strings = (
+      'print (''Current value of var test is: '', test)'
+      'test.Value = ''New value set by Python'''
+      'print (''New value is:'', test)'
+      'print (''-----------------------------------------------------'')'
+      'class C:'
+      '  def __init__(Self, Arg):'
+      '    Self.Arg = Arg'
+      '  def __str__(Self):'
+      '    return ''<C instance contains: '' + str(Self.Arg) + ''>'''
+      'print (''Current value of var object is: '', object)'
+      'object.Value = C(''Hello !'')'
+      'print (''New value is:'', object)'
+    )
+    ScrollBars = ssBoth
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 68
+    Top = 354
+    Width = 544
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 68
+    ClientWidth = 544
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 328
+      Height = 14
+      Top = 42
+      Width = 48
+      Caption = 'var test:'
+      ParentColor = False
+    end
+    object Button1: TButton
+      Left = 6
+      Height = 25
+      Top = 8
+      Width = 115
+      Caption = 'Execute script'
+      OnClick = Button1Click
+      TabOrder = 0
+    end
+    object Button2: TButton
+      Left = 168
+      Height = 25
+      Top = 8
+      Width = 91
+      Caption = 'Load script...'
+      OnClick = Button2Click
+      TabOrder = 1
+    end
+    object Button3: TButton
+      Left = 264
+      Height = 25
+      Top = 8
+      Width = 89
+      Caption = 'Save script...'
+      OnClick = Button3Click
+      TabOrder = 2
+    end
+    object Button4: TButton
+      Left = 368
+      Height = 25
+      Top = 8
+      Width = 89
+      Caption = 'Show var test'
+      OnClick = Button4Click
+      TabOrder = 3
+    end
+    object Edit1: TEdit
+      Left = 368
+      Height = 22
+      Top = 40
+      Width = 161
+      TabOrder = 4
+      Text = 'Edit1'
+    end
+  end
+  object Memo2: TMemo
+    Left = 0
+    Height = 137
+    Top = 0
+    Width = 544
+    Align = alTop
+    Lines.Strings = (
+      ''
+    )
+    TabOrder = 2
+  end
+  object PythonEngine1: TPythonEngine
+    AutoLoad = False
+    DllName = 'libpython3.8.so'
+    APIVersion = 1013
+    RegVersion = '3.7'
+    UseLastKnownVersion = False
+    InitScript.Strings = (
+      'import sys'
+      'print (''Python Dll: '', sys.version)'
+      'print (sys.copyright)'
+      'print'
+    )
+    IO = PythonGUIInputOutput1
+    PyFlags = [pfUseClassExceptionsFlag]
+    left = 32
+  end
+  object OpenDialog1: TOpenDialog
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 176
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = '.*.py'
+    Filter = 'Python files|*.py|Text files|*.txt|All files|*.*'
+    left = 208
+  end
+  object PythonDelphiVar1: TPythonDelphiVar
+    Engine = PythonEngine1
+    Module = '__main__'
+    VarName = 'test'
+    OnGetData = PythonDelphiVar1GetData
+    OnSetData = PythonDelphiVar1SetData
+    OnChange = PythonDelphiVar1Change
+    left = 128
+  end
+  object PythonGUIInputOutput1: TPythonGUIInputOutput
+    UnicodeIO = False
+    RawOutput = False
+    Output = Memo2
+    left = 64
+  end
+  object PythonDelphiVar2: TPythonDelphiVar
+    Engine = PythonEngine1
+    Module = '__main__'
+    VarName = 'object'
+    OnExtGetData = PythonDelphiVar2ExtGetData
+    OnExtSetData = PythonDelphiVar2ExtSetData
+    left = 128
+    top = 32
+  end
+end
