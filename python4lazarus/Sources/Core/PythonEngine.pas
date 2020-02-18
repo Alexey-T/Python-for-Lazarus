@@ -12,7 +12,7 @@
 (*                                  CANADA                                *)
 (*                                  e-mail: p4d@mmm-experts.com           *)
 (*                                                                        *)
-(*  look at the project page at: http://python4Delphi.googlecode.com/     *)
+(*  Project page: https://github.com/pyscripter/python4delphi             *)
 (**************************************************************************)
 (*  Functionality:  Delphi Components that provide an interface to the    *)
 (*                  Python language (see python.txt for more infos on     *)
@@ -32,7 +32,7 @@
 (*      Michiel du Toit (micdutoit@hsbfn.com) - Lazarus Port              *)
 (*      Chris Nicolai (nicolaitanes@gmail.com)                            *)
 (*      Kiriakos Vlahos (kvlahos@london.edu)                              *)
-(*      Andrey Gruzdev      (andrey.gruzdev@gmail.com)                    *)
+(*      Andrey Gruzdev (andrey.gruzdev@gmail.com)                         *)
 (*      Alexey Torgashin (support@uvviewsoft.com)                         *)
 (**************************************************************************)
 (* This source code is distributed with no WARRANTY, for no reason or use.*)
@@ -1076,7 +1076,7 @@ type
     ob_refcnt  : NativeInt;
     ob_type    : PPyTypeObject;
     // End of the Head of an object
-    hashcode    : Integer;  // -1 when unknown
+    hashcode    : NativeInt;  // -1 when unknown
     days        : Integer;  // -MAX_DELTA_DAYS <= days <= MAX_DELTA_DAYS
     seconds     : Integer;  // 0 <= seconds < 24*3600 is invariant
     microseconds: Integer;  // 0 <= microseconds < 1000000 is invariant
@@ -1543,7 +1543,6 @@ type
     FMajorVersion:   integer;
     FMinorVersion:   integer;
     FBuiltInModuleName: String;
-    function GetInitialized: Boolean;
 
     procedure AfterLoad; override;
     function  GetQuitMessage : String; override;
@@ -1913,6 +1912,7 @@ type
     PyUnicode_Decode:function (const s:PAnsiChar; size: NativeInt; const encoding : PAnsiChar; const errors: PAnsiChar):PPyObject; cdecl;
     PyUnicode_AsEncodedString:function (unicode:PPyObject; const encoding:PAnsiChar; const errors:PAnsiChar):PPyObject; cdecl;
     PyUnicode_FromOrdinal:function (ordinal:integer):PPyObject; cdecl;
+    PyUnicode_FromString:function (s:PAnsiChar):PPyObject; cdecl;
     PyUnicode_GetSize:function (unicode:PPyObject):NativeInt; cdecl;
     PyWeakref_GetObject: function ( ref : PPyObject) : PPyObject; cdecl;
     PyWeakref_NewProxy: function ( ob, callback : PPyObject) : PPyObject; cdecl;
@@ -2096,7 +2096,7 @@ type
   procedure MapDll;
 
   // Public properties
-  property Initialized : Boolean read GetInitialized;
+  property Initialized : Boolean read FInitialized;
   property Finalizing : Boolean read FFinalizing;
   property IsPython3000 : Boolean read FIsPython3000;
   property MajorVersion : integer read FMajorVersion;
@@ -3159,6 +3159,18 @@ uses
   {$ENDIF}
   Math;
 
+function _IsBufferAscii(buf: PAnsiChar): boolean; inline;
+begin
+  if buf=nil then
+    exit(true);
+  while buf^ <> #0 do
+  begin
+    if Ord(buf^) >= 128 then
+      exit(false);
+    Inc(buf);
+  end;
+  Result := true;
+end;
 
 (*******************************************************)
 (**                                                   **)
@@ -3525,6 +3537,7 @@ var
   i : Integer;
 begin
   inherited;
+  FInitialized := False;
   i := COMPILED_FOR_PYTHON_VERSION_INDEX;
   DllName     := PYTHON_KNOWN_VERSIONS[i].DllName;
   FAPIVersion := PYTHON_KNOWN_VERSIONS[i].APIVersion;
@@ -3579,14 +3592,6 @@ end;
 function  TPythonInterface.GetQuitMessage : String;
 begin
   Result := Format( 'Python could not be properly initialized. We must quit.', [DllName]);
-end;
-
-function TPythonInterface.GetInitialized: Boolean;
-begin
-  if Assigned(Py_IsInitialized) then
-    Result := Py_IsInitialized() <> 0
-  else
-    Result := FInitialized;
 end;
 
 procedure TPythonInterface.CheckPython;
@@ -4033,6 +4038,7 @@ begin
   PyUnicode_Decode          :=Import(Format('PyUnicode%s_Decode',[UnicodeSuffix]));
   PyUnicode_AsEncodedString :=Import(Format('PyUnicode%s_AsEncodedString',[UnicodeSuffix]));
   PyUnicode_FromOrdinal     :=Import(Format('PyUnicode%s_FromOrdinal',[UnicodeSuffix]));
+  PyUnicode_FromString      :=Import(Format('PyUnicode%s_FromString',[UnicodeSuffix]));
   PyUnicode_GetSize         :=Import(Format('PyUnicode%s_GetSize',[UnicodeSuffix]));
   PyWeakref_GetObject       :=Import('PyWeakref_GetObject');
   PyWeakref_NewProxy        :=Import('PyWeakref_NewProxy');
@@ -4619,7 +4625,6 @@ var
 begin
   inherited;
   FLock                    := TCriticalSection.Create;
-  FInitialized             := False;
   FInitScript              := TstringList.Create;
   FClients                 := TList.Create;
   FRedirectIO              := True;
@@ -4689,6 +4694,7 @@ begin
       Py_Finalize;
     finally
       FFinalizing := False;
+      FInitialized := False;
     end;
   // Detach our clients, when engine is beeing destroyed or one of its clients.
   canDetachClients := csDestroying in ComponentState;
@@ -4885,7 +4891,10 @@ begin
       Py_SetPythonHome(PAnsiChar(FPythonHome));
   end;
   Py_Initialize;
-  FInitialized := True;
+  if Assigned(Py_IsInitialized) then
+    FInitialized := Py_IsInitialized() <> 0
+  else
+    FInitialized := True;
   FIORedirected := False;
   InitSysPath;
   SetProgramArgs;
@@ -5268,7 +5277,7 @@ begin
   else if Assigned(FGlobalVars) then
     _globals := GlobalVars
   else
-    _globals := PyModule_GetDict(m);
+    _globals := _locals;
 
   try
     Result := PyRun_String(PAnsiChar(CleanString(command)), mode, _globals, _locals);
@@ -5554,7 +5563,7 @@ begin
         raise Define( EPyExecError.Create(''), s_type, s_value );
     end
   else
-    raise EPythonError.Create('RaiseError: could''nt fetch last exception');
+    raise EPythonError.Create('RaiseError: couldn''t fetch last exception');
 end;
 
 function TPythonEngine.PyObjectAsString( obj : PPyObject ) : String;
@@ -5776,8 +5785,6 @@ Var
       end;
   end;
 
-const
-  GUID_NULL: TGUID = '{00000000-0000-0000-0000-000000000000}'; // copied from ActiveX.pas
 var
   s : AnsiString;
   y, m, d, h, mi, sec, ms, jd, wd : WORD;
@@ -5846,30 +5853,18 @@ begin
           wStr := ''
         else
           wStr := DeRefV;
-      {$IFDEF PREFER_UNICODE}
         Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
-      {$ELSE}
-        s := wStr;
-        Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
-      {$ENDIF}
       end;
     varString:
       begin
         s := AnsiString(DeRefV);
         Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
       end;
-   {$IFDEF UNICODE}
     varUString:
       begin
        wStr := DeRefV;
-      {$IFDEF PREFER_UNICODE}
         Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
-      {$ELSE}
-        s := wStr;
-        Result := PyString_FromStringAndSize(PAnsiChar(s), Length(s));
-      {$ENDIF}
       end;
-    {$ENDIF}
   else
     if VarType(DeRefV) and varArray <> 0 then
       begin
@@ -5886,22 +5881,8 @@ begin
         Result := ReturnNone;
       end
     else
-      try
-        Disp := DeRefV;
-        wStr := '__asPPyObject__';
-        // detect if the variant supports this special property
-        if Assigned(Disp) and (Disp.GetIDsOfNames(GUID_NULL, @wStr, 1, 0, @DispID) = S_OK) then
-        begin
-          myInt := PtrInt(DeRefV.__asPPyObject__);  //Returns the address to PPyObject as integer. (See impl. in PythonAtom.pas)
-          Result := PPyObject(myInt);
-          Py_XIncRef(Result);
-        end
-        else //If variant don't implement __asPPyObject__, then we have to return nothing.
-          Result := ReturnNone;
-      except
-        // if something went wrong, just return none!
-        Result := ReturnNone;
-      end; // of try
+      // if we cannot get something useful then
+      Result := ReturnNone;
   end; // of case
 end;
 
@@ -6115,7 +6096,6 @@ begin
         else
           Result := PyUnicode_FromWideString( '' );
       end;
-    {$IFDEF UNICODE}
     vtUnicodeString:
       begin
         if Assigned(v.VUnicodeString) then
@@ -6123,7 +6103,6 @@ begin
         else
           Result := PyUnicode_FromWideString( '' );
       end;
-    {$ENDIF}
   else
     Raise Exception.Create('Argument type not allowed');
   end;
@@ -6228,7 +6207,6 @@ function TPythonEngine.ArrayToPyDict( items : array of const) : PPyObject;
         else
           Result := '';
       end;
-      {$IFDEF UNICODE}
       vtUnicodeString:
       begin
         if Assigned(v.VUnicodeString) then
@@ -6236,7 +6214,6 @@ function TPythonEngine.ArrayToPyDict( items : array of const) : PPyObject;
         else
           Result := '';
       end;
-      {$ENDIF}
     else
       Raise Exception.Create('Argument type not allowed');
     end;
@@ -9132,9 +9109,7 @@ begin
             (t = varOleStr) or
             (t = varBoolean) or
             (t = varByte) or
-            {$IFDEF UNICODE}
             (t = varUString) or
-            {$ENDIF}
             (t = varString);
 end;
 

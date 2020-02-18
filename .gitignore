@@ -30,5 +30,6 @@ out/
 backup/
 *.pyd
 *.lps
-demo
 *.compiled
+demo
+project1

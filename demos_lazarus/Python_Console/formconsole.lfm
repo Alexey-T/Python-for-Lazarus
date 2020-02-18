@@ -1,0 +1,51 @@
+object fmConsole: TfmConsole
+  Left = 505
+  Height = 146
+  Top = 498
+  Width = 677
+  BorderStyle = bsNone
+  ClientHeight = 146
+  ClientWidth = 677
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  ParentFont = True
+  LCLVersion = '1.5'
+  object panelConsole: TPanel
+    Left = 0
+    Height = 146
+    Top = 0
+    Width = 677
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 146
+    ClientWidth = 677
+    TabOrder = 0
+    object memoConsole: TMemo
+      Left = 0
+      Height = 123
+      Top = 0
+      Width = 677
+      Align = alClient
+      OnChange = memoConsoleChange
+      OnDblClick = memoConsoleDblClick
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 0
+    end
+    object edConsole: TEdit
+      Left = 0
+      Height = 23
+      Top = 123
+      Width = 677
+      Align = alBottom
+      OnKeyDown = edConsoleKeyDown
+      OnKeyPress = edConsoleKeyPress
+      TabOrder = 1
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    OnPopup = PopupMenu1Popup
+    left = 75
+    top = 58
+  end
+end

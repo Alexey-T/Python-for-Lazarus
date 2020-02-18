@@ -1,0 +1,59 @@
+object fmMain: TfmMain
+  Left = 312
+  Height = 352
+  Top = 285
+  Width = 730
+  Caption = 'Python-for-Lazarus demo'
+  ClientHeight = 352
+  ClientWidth = 730
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '2.1.0.0'
+  Visible = True
+  object Panel1: TPanel
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 730
+    Align = alTop
+    Caption = 'Enter Py commands in the input below. Eg, "import sys; print(sys.path)". Prefix with "=" to print. Eg, "=3+2" does "print(3+2)", simple "3+2" dont print here.'
+    Color = clCream
+    ParentColor = False
+    TabOrder = 0
+    Wordwrap = True
+  end
+  object PythonEngine: TPythonEngine
+    AutoLoad = False
+    DllName = 'python25.dll'
+    APIVersion = 1013
+    RegVersion = '3.0'
+    FatalAbort = False
+    UseLastKnownVersion = False
+    InitScript.Strings = (
+      'import sys'
+      'print(''Python'', sys.version)'
+    )
+    IO = PythonInputOutput1
+    PyFlags = [pfIgnoreEnvironmentFlag]
+    OnAfterInit = PythonEngineAfterInit
+    Left = 168
+    Top = 184
+  end
+  object PythonInputOutput1: TPythonInputOutput
+    OnSendData = PythonInputOutput1SendData
+    OnSendUniData = PythonInputOutput1SendUniData
+    UnicodeIO = True
+    RawOutput = False
+    Left = 200
+    Top = 200
+  end
+  object PythonModule1: TPythonModule
+    Engine = PythonEngine
+    OnInitialization = PythonModule1Initialization
+    ModuleName = 'demo'
+    Errors = <>
+    Left = 232
+    Top = 216
+  end
+end
