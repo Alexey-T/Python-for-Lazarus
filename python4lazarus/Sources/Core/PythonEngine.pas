@@ -1913,6 +1913,7 @@ type
     PyUnicode_Decode:function (const s:PAnsiChar; size: NativeInt; const encoding : PAnsiChar; const errors: PAnsiChar):PPyObject; cdecl;
     PyUnicode_AsEncodedString:function (unicode:PPyObject; const encoding:PAnsiChar; const errors:PAnsiChar):PPyObject; cdecl;
     PyUnicode_FromOrdinal:function (ordinal:integer):PPyObject; cdecl;
+    PyUnicode_FromString:function (s:PAnsiChar):PPyObject; cdecl;
     PyUnicode_GetSize:function (unicode:PPyObject):NativeInt; cdecl;
     PyWeakref_GetObject: function ( ref : PPyObject) : PPyObject; cdecl;
     PyWeakref_NewProxy: function ( ob, callback : PPyObject) : PPyObject; cdecl;
@@ -4033,6 +4034,7 @@ begin
   PyUnicode_Decode          :=Import(Format('PyUnicode%s_Decode',[UnicodeSuffix]));
   PyUnicode_AsEncodedString :=Import(Format('PyUnicode%s_AsEncodedString',[UnicodeSuffix]));
   PyUnicode_FromOrdinal     :=Import(Format('PyUnicode%s_FromOrdinal',[UnicodeSuffix]));
+  PyUnicode_FromString      :=Import(Format('PyUnicode%s_FromString',[UnicodeSuffix]));
   PyUnicode_GetSize         :=Import(Format('PyUnicode%s_GetSize',[UnicodeSuffix]));
   PyWeakref_GetObject       :=Import('PyWeakref_GetObject');
   PyWeakref_NewProxy        :=Import('PyWeakref_NewProxy');
@@ -6571,6 +6573,10 @@ begin
   begin
     _text := UnicodeString(str);
     Result := PyUnicode_FromWideString(_text);
+    {
+    // faster, but gives Py exception if called on bad utf8 buffer
+    Result := PyUnicode_FromString(str);
+    }
   end
   else
     Result := DLL_PyString_FromString(str);
