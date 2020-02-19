@@ -129,12 +129,12 @@ const
   PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
     (
     (DllName: 'libpython2.7.so'; RegVersion: '2.7'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.3.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.4.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.5.so'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.6.so'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.7.so'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.8.so'; RegVersion: '3.8'; APIVersion: 1013; CanUseLatest: True)
+    (DllName: 'libpython3.3m.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.4m.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.5m.so'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.6m.so'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.7m.so'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'libpython3.8m.so'; RegVersion: '3.8'; APIVersion: 1013; CanUseLatest: True)
     );
 {$endif}
 {$ifdef darwin}
@@ -5030,13 +5030,14 @@ var
   argv : PPAnsiChar;
   i, argc : Integer;
   L : array of AnsiString;
-  wbuff : PWideChar;
   wargv : PPWideChar;
+  wbuff : PWideChar;
+  {$IFDEF LINUX}
+  UCS4L : array of UCS4String;
+  {$ELSE}
   WL : array of UnicodeString;
+  {$ENDIF}
 begin
-  Exit; //AT: code hangs on Linux x64
-        //////////////////////////////
-
   // we build a string list of the arguments, because ParamStr returns a volatile string
   // and we want to build an array of PAnsiChar, pointing to valid strings.
   argc := ParamCount;
@@ -5057,16 +5058,24 @@ begin
       FreeMem( buff );
     end;
   end else begin
-    SetLength(WL, argc+1);
-    GetMem( wbuff, sizeof(PWideChar)*(argc+1) );
+    GetMem(wbuff, sizeof(PWideChar)*(argc+1));
     try
       wargv := PPWideChar(wbuff);
-      // get the strings
-      // build the PAnsiChar array
+      // build the PWideChar array
+      {$IFDEF LINUX}
+      // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
+      SetLength(UCS4L, argc+1);
       for i := 0 to argc do begin
-        WL[i] := ParamStr(i);
+        UCS4L[i] := WideStringToUCS4String(ParamStr(i));
+        wargv^[i] := @UCS4L[i][0];
+      end;
+      {$ELSE}
+      SetLength(WL, argc+1);
+      for i := 0 to argc do begin
+        WL[i] := UnicodeString(ParamStr(i));
         wargv^[i] := PWideChar(WL[i]);
       end;
+      {$ENDIF}
       // set the argv list of the sys module with the application arguments
       PySys_SetArgv3000( argc + 1, wargv );
     finally
