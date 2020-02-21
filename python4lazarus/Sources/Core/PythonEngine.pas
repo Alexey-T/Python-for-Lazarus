@@ -3451,13 +3451,8 @@ begin
 end;
 
 procedure TDynamicDll.LoadDll;
-var
-  S: string;
 begin
-  S := DllName;
-  if DllPath <> '' then
-    S := DllPath + DirectorySeparator + S;
-  OpenDll(S);
+  OpenDll(DllPath + DllName);
 end;
 
 procedure TDynamicDll.UnloadDll;
