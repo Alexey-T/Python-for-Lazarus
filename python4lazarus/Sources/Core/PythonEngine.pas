@@ -3341,19 +3341,14 @@ end;
 (*******************************************************)
 
 procedure TDynamicDll.DoOpenDll(const aDllName : String);
-var
-  S: String;
 begin
   if not IsHandleValid then
   begin
-    FDllName := aDllName;
-    S := GetDllPath+DllName;
-
     {$ifdef windows}
-    FDLLHandle := Windows.LoadLibrary(PChar(S));
+    FDLLHandle := Windows.LoadLibrary(PChar(aDllName));
     {$else}
     //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
-    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_LAZY+RTLD_GLOBAL));
+    FDLLHandle := PtrInt(dlopen(PAnsiChar(aDllName), RTLD_LAZY+RTLD_GLOBAL));
     {$endif}
   end;
 end;
@@ -3392,7 +3387,7 @@ begin
 
   if not IsHandleValid then begin
 {$IFDEF windows}
-    s := Format('Error %d: Could not open Dll "%s"',[GetLastError, DllName]);
+    s := Format('Error %d: Could not open Dll "%s"',[GetLastError, aDllName]);
 {$else}
     s := Format('Error: Could not open Dll "%s"',[DllName]);
 {$ENDIF}
@@ -3461,7 +3456,7 @@ var
 begin
   S := DllName;
   if DllPath <> '' then
-    S:= DllPath + DirectorySeparator + S;
+    S := DllPath + DirectorySeparator + S;
   OpenDll(S);
 end;
 
