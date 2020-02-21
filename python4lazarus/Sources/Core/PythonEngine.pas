@@ -3361,11 +3361,13 @@ var
 begin
   Result := DllPath;
 
+  (*
   {$IFDEF windows}
   if DLLPath = '' then begin
     IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
   end;
   {$ENDIF}
+  *)
 
   if Result <> '' then
   begin
