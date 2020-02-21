@@ -4866,7 +4866,8 @@ begin
   {$ENDIF}
 
   gPythonEngine := Self;
-  CheckRegistry;
+  //CheckRegistry; //AT: disabled
+
   if IsPython3000 then begin
     if Assigned(Py_SetProgramName3000) then
     begin
