@@ -5030,7 +5030,7 @@ var
   L : array of AnsiString;
   wargv : PPWideChar;
   wbuff : PWideChar;
-  {$IFDEF LINUX}
+  {$IFDEF UNIX}
   UCS4L : array of UCS4String;
   {$ELSE}
   WL : array of UnicodeString;
@@ -5060,7 +5060,7 @@ begin
     try
       wargv := PPWideChar(wbuff);
       // build the PWideChar array
-      {$IFDEF LINUX}
+      {$IFDEF UNIX}
       // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
       SetLength(UCS4L, argc+1);
       for i := 0 to argc do begin
