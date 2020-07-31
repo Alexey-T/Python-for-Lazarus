@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <PathDelim Value="\"/>
     <Name Value="python4lazarus_package"/>
     <Type Value="RunAndDesignTime"/>
@@ -25,30 +25,27 @@
       </Linking>
     </CompilerOptions>
     <Description Value="Wrapper for Python engine"/>
-    <Version Major="1"/>
-    <Files Count="5">
+    <Version Major="1" Minor="1"/>
+    <Files Count="4">
       <Item1>
-        <Filename Value="Sources\Core\PythonEngine.pas"/>
-        <UnitName Value="PythonEngine"/>
-      </Item1>
-      <Item2>
-        <Filename Value="Sources\Core\PythonGUIInputOutput.pas"/>
-        <UnitName Value="PythonGUIInputOutput"/>
-      </Item2>
-      <Item3>
-        <Filename Value="Sources\Core\MethodCallBack.pas"/>
-        <UnitName Value="MethodCallBack"/>
-      </Item3>
-      <Item4>
-        <Filename Value="Sources\Core\TinyWideStrings.pas"/>
-        <UnitName Value="TinyWideStrings"/>
-      </Item4>
-      <Item5>
         <Filename Value="python4lazarus_register.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="Python4Lazarus_register"/>
-      </Item5>
+      </Item1>
+      <Item2>
+        <Filename Value="PythonEngine.pas"/>
+        <UnitName Value="PythonEngine"/>
+      </Item2>
+      <Item3>
+        <Filename Value="PythonGUIInputOutput.pas"/>
+        <UnitName Value="PythonGUIInputOutput"/>
+      </Item3>
+      <Item4>
+        <Filename Value="MethodCallBack.pas"/>
+        <UnitName Value="MethodCallBack"/>
+      </Item4>
     </Files>
+    <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">
       <Item1>
         <PackageName Value="LCL"/>
@@ -66,7 +63,6 @@
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
-      <IgnoreBinaries Value="False"/>
     </PublishOptions>
     <CustomOptions Items="ExternHelp" Version="2">
       <_ExternHelp Items="Count"/>

@@ -8,8 +8,8 @@ unit python4lazarus_package;
 interface
 
 uses
-  PythonEngine, PythonGUIInputOutput, MethodCallBack, TinyWideStrings, 
-  Python4Lazarus_register, LazarusPackageIntf;
+  Python4Lazarus_register, PythonEngine, PythonGUIInputOutput, MethodCallBack, 
+  LazarusPackageIntf;
 
 implementation
 
