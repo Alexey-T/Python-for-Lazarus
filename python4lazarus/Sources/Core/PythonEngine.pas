@@ -1762,7 +1762,6 @@ type
     PyFunction_GetGlobals:function (ob:PPyObject):PPyObject; cdecl;
     PyFunction_New:function (ob1,ob2:PPyObject):PPyObject; cdecl;
     PyImport_AddModule:function (name:PAnsiChar):PPyObject; cdecl;
-    PyImport_Cleanup:procedure; cdecl;
     PyImport_GetMagicNumber:function :LONGINT; cdecl;
     PyImport_ImportFrozenModule:function (key:PAnsiChar):integer; cdecl;
     PyImport_ImportModule:function (name:PAnsiChar):PPyObject; cdecl;
@@ -3869,7 +3868,6 @@ begin
   PyFunction_GetGlobals     :=Import('PyFunction_GetGlobals');
   PyFunction_New            :=Import('PyFunction_New');
   PyImport_AddModule        :=Import('PyImport_AddModule');
-  PyImport_Cleanup          :=Import('PyImport_Cleanup');
   PyImport_GetMagicNumber   :=Import('PyImport_GetMagicNumber');
   PyImport_ImportFrozenModule:=Import('PyImport_ImportFrozenModule');
   PyImport_ImportModule     :=Import('PyImport_ImportModule');
