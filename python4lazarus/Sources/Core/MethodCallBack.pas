@@ -34,18 +34,8 @@ uses SysUtils;
 type
   TCallType = (ctSTDCALL, ctCDECL);
   TCallBack = procedure of object;
-  TDDEAPIfunc = function( CallType, Fmt: Integer; Conv: longint;
-                          hsz1, hsz2: longint;
-                          Data: longint; Data1, Data2: integer):
-                          longint of object; stdcall;
-// Method declaration for DDE(ML) interface. Callbackmethods for DDE(ML) have
-// to be declared according to this.
 
-function GetDDECallBack(method: TDDEAPIfunc): Pointer;
-// Call for example with
-// GetDDECallBack(DDECallBackMethod);
-
-function  GetCallBack( self: TObject; method: Pointer;
+  function  GetCallBack( self: TObject; method: Pointer;
                        argnum: Integer; calltype: tcalltype): Pointer;
 // Call for example with
 // CallBackProc := GetCallBack( self, @TSelfObject.Method, 2, ctSTDCALL);
@@ -129,16 +119,12 @@ const
 
 var
   CodeMemPages: PCodeMemPage;
-  
+
 type
 {$IFDEF FPC}
   PtrCalcType = PtrUInt;
 {$ELSE}
-  {$IFDEF CPUX64}
   PtrCalcType = NativeInt;
-  {$ELSE}
-  PtrCalcType = Longint;
-  {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF MSWINDOWS}
@@ -180,15 +166,16 @@ begin
     page:=VirtualAlloc(nil, PageSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	{$ELSE}
     //page := GetMem(PageSize);
+    {$WARN SYMBOL_PLATFORM OFF}
     page := mmap(Pointer($10000000), PageSize, PROT_NONE, MAP_PRIVATE or MAP_ANON, -1, 0);
+    {$WARN SYMBOL_PLATFORM ON}
     if page=Pointer(-1) then //MMAP_FAILED result?
     begin
       ptr := nil;
       exit;
     end;
-
     mprotect(page, PageSize, PROT_READ or PROT_WRITE or PROT_EXEC);
-	{$ENDIF}	
+	{$ENDIF}
     page^.next:=CodeMemPages;
     CodeMemPages:=page;
     // init pointer to end of page
@@ -212,15 +199,12 @@ begin
   // we need to search through all the assigned blocks
   // A page is only released when all blocks in it have been freed
   page:=CodeMemPages;
-  lastblock:=nil;
   lastpage:=nil;
-  if page <> nil then
-    block:=page^.CodeBlocks
-  else
-    block:=niL;
 
   while page <> nil do
   begin
+    lastblock:=nil;
+    block:=page^.CodeBlocks;
     while PtrCalcType(block) < (PtrCalcType(page) + pagesize) do
     begin
       if @(block^.Code[0]) = ptr then
@@ -246,7 +230,7 @@ begin
 		  {$ELSE}
           // FreeMem(page);
           munmap(page,PageSize);
-		  {$ENDIF}		  
+		  {$ENDIF}
         end;
 
         exit;
@@ -256,10 +240,7 @@ begin
     end;
     lastpage:=page;
     page:=page^.Next;
-    block:=page^.CodeBlocks;
-    lastblock:=nil;
   end;
-
 end;
 
 function CodeMemPageCount: integer;
@@ -275,11 +256,6 @@ begin
     inc(result);
     page:=page^.Next;
   end;
-end;
-
-function GetDDECallBack(method: TDDEAPIfunc): Pointer;
-begin
-  result := GetOfObjectCallBack(TCallBack(method),8,ctSTDCALL);
 end;
 
 function  GetOfObjectCallBack( CallBack: TCallBack;

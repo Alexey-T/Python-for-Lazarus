@@ -57,7 +57,7 @@ type
     The function result has the semantics of Delphi compare functions
     -1: A is bigger (newer), 0: equal versions, 1: B is bigger (newer)
   *)
-  function  CompareVersions(A, B : String) : Integer;
+  function  CompareVersions(A, B : string) : Integer;
 
 
   {$IFDEF MSWINDOWS}
@@ -72,7 +72,8 @@ type
   function GetRegisteredPythonVersions : TPythonVersions;
   (* Returns the highest numbered registered Python version *)
   function GetLatestRegisteredPythonVersion(out PythonVersion: TPythonVersion): Boolean;
-  function PythonVersionFromPath(const Path: string; out PythonVersion: TPythonVersion): Boolean;
+  function PythonVersionFromPath(const Path: string; out PythonVersion: TPythonVersion;
+     AcceptVirtualEnvs: Boolean = True): Boolean;
   {$ENDIF}
 
 implementation
@@ -80,10 +81,10 @@ implementation
 Uses
   {$IFDEF MSWINDOWS}
   Windows,
+  Registry,
   {$ENDIF}
   SysUtils,
   Math,
-  Registry,
   PythonEngine;
 
 { TPythonVersion }
@@ -122,6 +123,18 @@ begin
     TPythonEngine(PythonEngine).DllName := DLLName;
     TPythonEngine(PythonEngine).DllPath := DLLPath;
     TPythonEngine(PythonEngine).APIVersion := ApiVersion;
+    if Is_venv then begin
+      TPythonEngine(PythonEngine).VenvPythonExe := PythonExecutable;
+      TPythonEngine(PythonEngine).SetPythonHome(DLLPath);
+    end else if not IsRegistered or Is_conda then
+      {
+         Not sure why but PythonHome needs to be set even for
+         registered conda distributions
+         Note also that for conda distributions to work properly,
+         you need to add Format('%s;%0:s\Library\bin;', [Version.InstallPath]
+         to your Windows path if it is not there already.
+      }
+      TPythonEngine(PythonEngine).SetPythonHome(InstallPath);
   end;
 end;
 
@@ -143,10 +156,10 @@ begin
       FormatStr := 'Conda %s (%s)'
     else
       FormatStr := 'Python %s (%s)';
-    if Is_venv then
-      FormatStr := FormatStr + ' -venv'
-    else if Is_virtualenv then
-      FormatStr := FormatStr + ' -virtualenv';
+    if Is_virtualenv then
+      FormatStr := FormatStr + ' -virtualenv'
+    else if Is_venv then
+      FormatStr := FormatStr + ' -venv';
 
     FDisplayName := Format(FormatStr, [SysVersion, SysArchitecture]);
   end;
@@ -184,7 +197,7 @@ function TPythonVersion.GetPythonExecutable: string;
 begin
   Result := IncludeTrailingPathDelimiter(InstallPath) + 'python.exe';
   if not FileExists(Result) then begin
-    Result := IncludeTrailingPathDelimiter(InstallPath) +  'Scripts\python.exe';
+    Result := IncludeTrailingPathDelimiter(InstallPath) +  'Scripts' + PathDelim + 'python.exe';
     if not FileExists(Result) then Result := '';
   end;
 end;
@@ -213,11 +226,10 @@ end;
 
 function TPythonVersion.Is_virtualenv: Boolean;
 begin
-  Result := not IsRegistered and (InstallPath <> DLLPath) and
-    not FileExists(IncludeTrailingPathDelimiter(InstallPath) + 'pyvenv.cfg');
+  Result := Is_venv and FileExists(IncludeTrailingPathDelimiter(InstallPath) + 'Scripts' + PathDelim + DLLName);
 end;
 
-function  CompareVersions(A, B : String) : Integer;
+function  CompareVersions(A, B : string) : Integer;
 
   function GetNextNumber(var Version: string): Integer;
   var
@@ -395,8 +407,8 @@ Var
   PythonVersion : TPythonVersion;
 begin
   Count := 0;
-  SetLength(Result, High(PYTHON_KNOWN_VERSIONS) - COMPILED_FOR_PYTHON_VERSION_INDEX + 1);
-  for I := High(PYTHON_KNOWN_VERSIONS) downto COMPILED_FOR_PYTHON_VERSION_INDEX do
+  SetLength(Result, High(PYTHON_KNOWN_VERSIONS));
+  for I := High(PYTHON_KNOWN_VERSIONS) downto 1 do
     if GetRegisteredPythonVersion(PYTHON_KNOWN_VERSIONS[I].RegVersion, PythonVersion) then
     begin
       Result[Count] := PythonVersion;
@@ -409,14 +421,16 @@ function GetLatestRegisteredPythonVersion(out PythonVersion: TPythonVersion): Bo
 Var
   I: Integer;
 begin
-  for I := High(PYTHON_KNOWN_VERSIONS) downto COMPILED_FOR_PYTHON_VERSION_INDEX do
+  for I := High(PYTHON_KNOWN_VERSIONS) downto 1 do
   begin
     Result := GetRegisteredPythonVersion(PYTHON_KNOWN_VERSIONS[I].RegVersion, PythonVersion);
     if Result then break;
   end;
 end;
 
-function PythonVersionFromPath(const Path: string; out PythonVersion: TPythonVersion): Boolean;
+function PythonVersionFromPath(const Path: string; out PythonVersion: TPythonVersion;
+  AcceptVirtualEnvs: Boolean = True): Boolean;
+
   function FindPythonDLL(APath : string): string;
   Var
     FindFileData: TWIN32FindData;
@@ -436,10 +450,29 @@ function PythonVersionFromPath(const Path: string; out PythonVersion: TPythonVer
       Result := DLLFileName;
   end;
 
+  function GetVenvBasePrefix(InstallPath: string): string;
+  var
+    SL : TStringList;
+  begin
+    SL := TStringList.Create;
+    try
+       try
+         SL.LoadFromFile(IncludeTrailingPathDelimiter(InstallPath)+'pyvenv.cfg');
+         Result := Trim(SL.Values['home']);
+         if Result = '' then
+           Result := Trim(SL.Values['home ']);
+       except
+       end;
+    finally
+      SL.Free;
+    end;
+  end;
+
 Var
   DLLFileName: string;
   DLLPath: string;
   SysVersion: string;
+  BasePrefix: string;
   I: integer;
 begin
   Result := False;
@@ -450,11 +483,20 @@ begin
   PythonVersion.InstallPath := DLLPath;
 
   DLLFileName := FindPythonDLL(DLLPath);
+
   if DLLFileName = '' then begin
-    DLLPath := DLLPath + '\Scripts';
-    DLLFileName := FindPythonDLL(DLLPath);
+    if AcceptVirtualEnvs and PythonVersion.Is_venv then
+    begin
+      BasePrefix := GetVenvBasePrefix(PythonVersion.InstallPath);
+      if (BasePrefix <> '') and PythonVersionFromPath(BasePrefix, PythonVersion, False) then
+      begin
+        //  Install path points to venv but the rest of the info is from base_prefix
+        PythonVersion.InstallPath := ExcludeTrailingPathDelimiter(Path);
+        Result := True;
+      end;
+    end;
+    Exit;
   end;
-  if DLLFileName = '' then Exit;
 
   // check if same platform
   try
@@ -469,7 +511,7 @@ begin
   PythonVersion.SysVersion := SysVersion;
   PythonVersion.fSysArchitecture := PythonVersion.ExpectedArchitecture;
 
-  for I := High(PYTHON_KNOWN_VERSIONS) downto COMPILED_FOR_PYTHON_VERSION_INDEX do
+  for I := High(PYTHON_KNOWN_VERSIONS) downto 1 do
     if PYTHON_KNOWN_VERSIONS[I].RegVersion = SysVersion then begin
       Result := True;
       break;
