@@ -3125,7 +3125,8 @@ type
                                                    default nil;
     property ThreadState: PPyThreadState read  fThreadState
                                          write fThreadState;
-    property ThreadExecMode: TThreadExecMode read fThreadExecMode;
+    property ThreadExecMode: TThreadExecMode read fThreadExecMode
+                                             write fThreadExecMode;
   end;
 {$HINTS ON}
 
