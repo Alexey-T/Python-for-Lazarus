@@ -1,0 +1,85 @@
+object Form1: TForm1
+  Left = 159
+  Height = 240
+  Top = 207
+  Width = 504
+  Caption = 'Thread Python Test'
+  ClientHeight = 240
+  ClientWidth = 504
+  OnCloseQuery = FormCloseQuery
+  object ScriptBtn: TButton
+    Left = 6
+    Height = 35
+    Top = 199
+    Width = 138
+    Anchors = [akLeft, akBottom]
+    Caption = 'Start script'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    OnClick = ScriptBtnClick
+    ParentFont = False
+    TabOrder = 0
+  end
+  object Memo1: TMemo
+    Left = 6
+    Height = 180
+    Top = 6
+    Width = 495
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ParentFont = False
+    ScrollBars = ssAutoBoth
+    TabOrder = 1
+  end
+  object ThreadBtn: TButton
+    Left = 166
+    Height = 35
+    Top = 199
+    Width = 176
+    Anchors = [akLeft, akBottom]
+    Caption = 'Start 3 threads'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    OnClick = ThreadBtnClick
+    ParentFont = False
+    TabOrder = 2
+  end
+  object StopThreadBtn: TButton
+    Left = 368
+    Height = 35
+    Top = 199
+    Width = 132
+    Anchors = [akRight, akBottom]
+    Caption = 'Stop threads'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    Font.Style = [fsBold]
+    OnClick = StopThreadBtnClick
+    ParentFont = False
+    TabOrder = 3
+  end
+  object PythonEngine1: TPythonEngine
+    DllName = 'python38.dll'
+    DllPath = 'M:/dev/python38'
+    APIVersion = 1013
+    RegVersion = '3.8'
+    UseLastKnownVersion = False
+    InitThreads = True
+    PyFlags = [pfDebug, pfInteractive]
+    Left = 64
+    Top = 26
+  end
+end
