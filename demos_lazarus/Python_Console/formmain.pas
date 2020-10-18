@@ -110,6 +110,8 @@ begin
 end;
 
 procedure TfmMain.PythonEngineAfterInit(Sender: TObject);
+const
+  NTest: Longint = 1 shl 30;
 var
   dir: string;
 begin
@@ -118,6 +120,9 @@ begin
   Py_SetSysPath([dir+'DLLs', dir+cPyZipWindows], false);
   {$endif}
   Py_SetSysPath([dir+'Py'], true);
+
+  //test for LongInt
+  //Caption:= BoolToStr(PythonEngine.PyInt_AsLong(PythonEngine.PyInt_FromLong(NTest)) = NTest, true);
 end;
 
 procedure TfmMain.DoPy_InitEngine;
