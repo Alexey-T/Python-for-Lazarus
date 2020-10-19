@@ -9846,28 +9846,10 @@ begin
 {$endif}
 end;
 
-(*
-function CleanString(const s : AnsiString; AppendLF : Boolean) : AnsiString;
-var
-  i : Integer;
-begin
-  result := s;
-  if s = '' then
-    Exit;
-  i := Pos(AnsiString(CR),s);
-  while i > 0 do
-    begin
-      Delete( result, i, 1 );
-      i := PosEx(AnsiString(CR),result, i);
-    end;
-  if AppendLF and (result[length(result)] <> LF) then
-    Result := Result + LF;
-end;
-*)
-
 function CleanString(const s : AnsiString; AppendLF : Boolean) : AnsiString;
 begin
   Result := AdjustLineBreaks(s, tlbsLF);
+  if Result = '' then Exit;
   if AppendLF and (result[length(result)] <> LF) then
     Result := Result + LF;
 end;
