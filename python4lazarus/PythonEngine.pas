@@ -4978,13 +4978,9 @@ var
   y, m, d, h, mi, sec, ms, jd, wd : WORD;
   dt : TDateTime;
   dl : Integer;
-  myInt : NativeInt;
   wStr : UnicodeString;
-  Disp : IDispatch;
-  DispID : Integer;
   args : PPyObject;
 begin
-  Disp := nil;
   //Dereference Variant
   DerefV := V;
   while VarType(DeRefV) = varByRef or varVariant do
