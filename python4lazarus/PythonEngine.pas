@@ -4907,15 +4907,6 @@ begin
   if Assigned(gPythonEngine) then
     raise Exception.Create('There is already one instance of TPythonEngine running' );
 
-  {$IFDEF FPC}
-  //this allows you to just call Initialize to create a non-IDE instance with
-  //Lazarus.
-  if(AutoLoad and not IsHandleValid) then begin
-    LoadDLL;//Calls initialize
-    exit;
-  end;
-  {$ENDIF}
-
   gPythonEngine := Self;
   //CheckRegistry; //AT: disabled
 
