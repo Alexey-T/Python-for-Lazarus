@@ -2,8 +2,8 @@
 (*                                                                        *)
 (* Module:  Unit 'PythonEngine'     Copyright (c) 1997                    *)
 (*                                                                        *)
-(* Version: 3.0                     Dr. Dietmar Budelsky                  *)
-(* Sub-Version: 0.33                dbudelsky@web.de                      *)
+(*                                  Dr. Dietmar Budelsky                  *)
+(*                                  dbudelsky@web.de                      *)
 (*                                  Germany                               *)
 (*                                                                        *)
 (*                                  Morgan Martinet                       *)
@@ -11,6 +11,9 @@
 (*                                  H2J 3L2 MONTREAL (QC)                 *)
 (*                                  CANADA                                *)
 (*                                  e-mail: p4d@mmm-experts.com           *)
+(*                                                                        *)
+(*                                  PyScripter                            *)
+(*                                  e-mail: pyscripter@gmail.com          *)
 (*                                                                        *)
 (*  Project page: https://github.com/pyscripter/python4delphi             *)
 (**************************************************************************)
@@ -31,9 +34,7 @@
 (*      Stefan Hoffmeister (Stefan.Hoffmeister@Econos.de)                 *)
 (*      Michiel du Toit (micdutoit@hsbfn.com) - Lazarus Port              *)
 (*      Chris Nicolai (nicolaitanes@gmail.com)                            *)
-(*      Kiriakos Vlahos (kvlahos@london.edu)                              *)
 (*      Andrey Gruzdev (andrey.gruzdev@gmail.com)                         *)
-(*      Alexey Torgashin (support@uvviewsoft.com)                         *)
 (**************************************************************************)
 (* This source code is distributed with no WARRANTY, for no reason or use.*)
 (* Everyone is allowed to use and change this code free for his own tasks *)
@@ -58,12 +59,6 @@ unit PythonEngine;
 
 { TODO -oMMM : implement tp_as_buffer slot }
 { TODO -oMMM : implement Attribute descriptor and subclassing stuff }
-
-{$IFNDEF FPC}
-  {$IFNDEF DELPHI7_OR_HIGHER}
-      Error! Delphi 7 or higher is required!
-  {$ENDIF}
-{$ENDIF}
 
 {$IF defined(LINUX) or (defined(BSD) and not defined(DARWIN)) or defined(SOLARIS) or defined(HAIKU)}
   {$define _so_files}
