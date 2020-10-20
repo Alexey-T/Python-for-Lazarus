@@ -24,9 +24,8 @@ type
     PythonEngine1: TPythonEngine;
     PythonGUIInputOutput1: TPythonGUIInputOutput;
     procedure Button1Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
   private
-    procedure DoPy_InitEngine;
+    { private declarations }
   public
     { public declarations }
   end; 
@@ -36,42 +35,16 @@ var
 
 implementation
 
-uses
-  LclType, proc_py;
-
-{$R unit1.lfm}
-
-const
-    cPyLibraryWindows = 'python37.dll';
-    cPyLibraryLinux = 'libpython3.7m.so.1.0';
-    cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
-    cPyZipWindows = 'python37.zip';
-
 { TForm1 }
+
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   PythonEngine1.ExecStrings( Memo2.Lines );
 end;
 
-
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  DoPy_InitEngine;
-end;
-
-procedure TForm1.DoPy_InitEngine;
-var
-  S: string;
-begin
-  S:=
-    {$ifdef windows} cPyLibraryWindows {$endif}
-    {$ifdef linux} cPyLibraryLinux {$endif}
-    {$ifdef darwin} cPyLibraryMac {$endif} ;
-  PythonEngine1.DllPath:= ExtractFileDir(S);
-  PythonEngine1.DllName:= ExtractFileName(S);
-  PythonEngine1.LoadDll;
-end;
+initialization
+  {$I unit1.lrs}
 
 end.
 

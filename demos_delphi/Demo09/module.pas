@@ -22,7 +22,7 @@ begin
     begin
       if PyArg_ParseTuple( args, 'ii:Add',@a, @b ) <> 0 then
         begin
-          Result := PyInt_FromLong( a + b );
+          Result := PyLong_FromLong( a + b );
         end
       else
         Result := nil;
@@ -51,9 +51,9 @@ begin
     gEngine := TPythonEngine.Create(nil);
     gEngine.AutoFinalize := False;
     gEngine.UseLastKnownVersion := False;
-    gEngine.RegVersion := '3.2';  //<-- Use the same version as the python 3.x your main program uses
+    gEngine.RegVersion := '3.7';  //<-- Use the same version as the python 3.x your main program uses
     gEngine.APIVersion := 1013;
-    gEngine.DllName := 'python32.dll';
+    gEngine.DllName := 'python37.dll';
     gEngine.LoadDll;
     gModule := TPythonModule.Create(nil);
     gModule.Engine := gEngine;

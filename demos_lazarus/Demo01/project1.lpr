@@ -7,19 +7,13 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Unit1;
+  Forms, Unit1, LResources, P4DLaz
+  { you can add units after this };
 
-{$IFDEF WINDOWS}
-{$R project1.rc}
-{$ENDIF}
-{$IFDEF UNIX}
-{$R *.res}
-{$ENDIF}
+{$IFDEF WINDOWS}{$R project1.rc}{$ENDIF}
 
 begin
-  //{$I project1.lrs}
-  RequireDerivedFormResource:=True;
-  Application.Scaled:=True;
+  {$I project1.lrs}
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
   Application.Run;

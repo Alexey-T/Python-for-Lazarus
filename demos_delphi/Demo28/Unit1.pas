@@ -25,9 +25,9 @@ type
     function  Iter : PPyObject; override;
 
     // Sequence services
-    function  SqLength : Integer; override;
-    function  SqItem( idx : Integer ) : PPyObject; override;
-    function  SqAssItem( idx : integer; obj : PPyObject) : Integer; override;
+    function  SqLength : NativeInt; override;
+    function  SqItem( idx : NativeInt ) : PPyObject; override;
+    function  SqAssItem( idx : NativeInt; obj : PPyObject) : Integer; override;
 
     // Class methods
     class procedure RegisterMethods( PythonType : TPythonType ); override;
@@ -131,7 +131,7 @@ begin
     Adjust(@Self);
     if PyArg_ParseTuple( args, 'O:add',@_obj ) <> 0 then
     begin
-      Result := PyInt_FromLong(Strings.Add(PyObjectAsString(_obj)));
+      Result := PyLong_FromLong(Strings.Add(PyObjectAsString(_obj)));
     end
     else
       Result := nil;
@@ -196,7 +196,7 @@ begin
   fStrings.Assign(Value);
 end;
 
-function TPyStringList.SqAssItem(idx: integer; obj: PPyObject): Integer;
+function TPyStringList.SqAssItem(idx: NativeInt; obj: PPyObject): Integer;
 begin
   with GetPythonEngine do
   begin
@@ -213,12 +213,12 @@ begin
   end;
 end;
 
-function TPyStringList.SqItem(idx: Integer): PPyObject;
+function TPyStringList.SqItem(idx: NativeInt): PPyObject;
 begin
   with GetPythonEngine do
   begin
     if idx < Strings.Count then
-      Result := PyString_FromString(PAnsiChar(AnsiString(Strings[idx])))
+      Result := PyUnicode_FromAnsiString(AnsiString(Strings[idx]))
     else
     begin
       PyErr_SetString(PyExc_IndexError^, 'list index out of range');
@@ -227,7 +227,7 @@ begin
   end;
 end;
 
-function TPyStringList.SqLength: Integer;
+function TPyStringList.SqLength: NativeInt;
 begin
   Result := Strings.Count;
 end;
@@ -280,7 +280,7 @@ begin
     end
     else
     begin
-      Result := PyString_FromString(PAnsiChar(AnsiString(StringList.Strings[fCurrentIndex])));
+      Result := PyUnicode_FromAnsiString(AnsiString(StringList.Strings[fCurrentIndex]));
     end;
   end;
 end;
