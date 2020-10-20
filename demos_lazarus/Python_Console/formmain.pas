@@ -50,7 +50,7 @@ const
 function Py_s0(Self, Args : PPyObject): PPyObject; cdecl;
 begin
   with GetPythonEngine do
-    Result:= PyString_FromString('1.0.0');
+    Result:= PyUnicode_FromString('1.0.0');
 end;
 
 function Py_s1(Self, Args : PPyObject): PPyObject; cdecl;
@@ -58,7 +58,7 @@ const
   S0: string = 'begin.Привет.end';
 begin
   with GetPythonEngine do
-    Result:= PyString_FromString(PChar(S0));
+    Result:= PyUnicode_FromString(PChar(S0));
 end;
 
 { TfmMain }
