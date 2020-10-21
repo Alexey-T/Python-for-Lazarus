@@ -60,10 +60,13 @@ unit PythonEngine;
 { TODO -oMMM : implement tp_as_buffer slot }
 { TODO -oMMM : implement Attribute descriptor and subclassing stuff }
 
-{$IF defined(LINUX) or (defined(BSD) and not defined(DARWIN)) or defined(SOLARIS) or defined(HAIKU)}
-  {$define _so_files}
+{$IF defined(UNIX) and not defined(DARWIN)}
+{$define _so_files}
 {$ENDIF}
 
+{$ifdef UNIX}
+{$define POSIX} // to bo compatible with Python4Delphi
+{$endif}
 
 interface
 
@@ -1523,11 +1526,13 @@ type
     PyType_GenericNew:function(atype: PPyTypeObject; args, kwds : PPyObject) : PPyObject; cdecl;
     PyType_Ready:function(atype: PPyTypeObject) : integer; cdecl;
     PyUnicode_FromWideChar:function (const w:PWideChar; size:NativeInt):PPyObject; cdecl;
+    PyUnicode_FromString:function (s:PAnsiChar):PPyObject; cdecl;
+    PyUnicode_FromStringAndSize:function (s:PAnsiChar;i:NativeInt):PPyObject; cdecl;
     PyUnicode_AsWideChar:function (unicode: PPyObject; w:PWideChar; size:NativeInt):integer; cdecl;
+    PyUnicode_AsUTF8:function (unicode: PPyObject):PAnsiChar; cdecl;
     PyUnicode_Decode:function (const s:PAnsiChar; size: NativeInt; const encoding : PAnsiChar; const errors: PAnsiChar):PPyObject; cdecl;
     PyUnicode_AsEncodedString:function (unicode:PPyObject; const encoding:PAnsiChar; const errors:PAnsiChar):PPyObject; cdecl;
     PyUnicode_FromOrdinal:function (ordinal:integer):PPyObject; cdecl;
-    PyUnicode_FromString:function (s:PAnsiChar):PPyObject; cdecl;
     PyUnicode_GetSize:function (unicode:PPyObject):NativeInt; cdecl;
     PyWeakref_GetObject: function ( ref : PPyObject) : PPyObject; cdecl;
     PyWeakref_NewProxy: function ( ob, callback : PPyObject) : PPyObject; cdecl;
@@ -1793,8 +1798,6 @@ type
     function   StringsToPyTuple( strings : TStrings ) : PPyObject;
     procedure  PyListToStrings( list : PPyObject; strings : TStrings );
     procedure  PyTupleToStrings( tuple: PPyObject; strings : TStrings );
-    function   PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
-    function   PyUnicode_FromWideString(const AString : UnicodeString) : PPyObject;
     function   ReturnNone : PPyObject;
     function   FindModule( const ModuleName : AnsiString ) : PPyObject;
     function   FindFunction(ModuleName,FuncName: AnsiString): PPyObject;
@@ -1815,8 +1818,11 @@ type
     function   PyTZInfo_Check( obj : PPyObject ) : Boolean;
     function   PyTZInfo_CheckExact( obj : PPyObject ) : Boolean;
     { end date/time functions }
-    function PyUnicode_FromAnsiString(const Str: AnsiString): PPyObject;
-    function PyUnicode_FromString(const Str : string): PPyObject;
+
+    { String conversion }
+    function PyUnicodeFromString(const AString : UnicodeString) : PPyObject; overload;
+    function PyUnicodeFromString(const AString: AnsiString): PPyObject; overload;
+    function PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
 
     // Public Properties
     property ClientCount : Integer read GetClientCount;
@@ -3447,43 +3453,45 @@ begin
   PySeqIter_New             :=Import('PySeqIter_New');
   PySlice_GetIndicesEx      :=Import('PySlice_GetIndicesEx');
   PySlice_New               :=Import('PySlice_New');
-  PyBytes_AsString         := Import('PyBytes_AsString');
-  PyBytes_AsStringAndSize  := Import('PyBytes_AsStringAndSize');
-  PyBytes_Concat              :=Import('PyBytes_Concat');
-  PyBytes_ConcatAndDel        :=Import('PyBytes_ConcatAndDel');
-  PyBytes_FromString          :=Import('PyBytes_FromString');
-  PyBytes_FromStringAndSize   :=Import('PyBytes_FromStringAndSize');
-  PyBytes_Size                :=Import('PyBytes_Size');
-  PyBytes_DecodeEscape        :=Import('PyBytes_DecodeEscape');
-  PyBytes_Repr                :=Import('PyBytes_Repr');
-  _PyBytes_Resize             :=Import('_PyBytes_Resize');
-  PySys_GetObject           :=Import('PySys_GetObject');
-  PySys_SetObject           :=Import('PySys_SetObject');
-  PySys_SetPath             :=Import('PySys_SetPath');
-  PyTraceBack_Here          :=Import('PyTraceBack_Here');
-  PyTraceBack_Print         :=Import('PyTraceBack_Print');
-  PyTuple_GetItem           :=Import('PyTuple_GetItem');
-  PyTuple_GetSlice          :=Import('PyTuple_GetSlice');
-  PyTuple_New               :=Import('PyTuple_New');
-  PyTuple_SetItem           :=Import('PyTuple_SetItem');
-  PyTuple_Size              :=Import('PyTuple_Size');
-  PyType_IsSubtype          :=Import('PyType_IsSubtype');
-  PyType_GenericAlloc       :=Import('PyType_GenericAlloc');
-  PyType_GenericNew         :=Import('PyType_GenericNew');
-  PyType_Ready              :=Import('PyType_Ready');
-  PyUnicode_FromWideChar    :=Import(Format('PyUnicode%s_FromWideChar',[UnicodeSuffix]));
-  PyUnicode_AsWideChar      :=Import(Format('PyUnicode%s_AsWideChar',[UnicodeSuffix]));
-  PyUnicode_Decode          :=Import(Format('PyUnicode%s_Decode',[UnicodeSuffix]));
-  PyUnicode_AsEncodedString :=Import(Format('PyUnicode%s_AsEncodedString',[UnicodeSuffix]));
-  PyUnicode_FromOrdinal     :=Import(Format('PyUnicode%s_FromOrdinal',[UnicodeSuffix]));
-  PyUnicode_FromString      :=Import(Format('PyUnicode%s_FromString',[UnicodeSuffix]));
-  PyUnicode_GetSize         :=Import(Format('PyUnicode%s_GetSize',[UnicodeSuffix]));
-  PyWeakref_GetObject       :=Import('PyWeakref_GetObject');
-  PyWeakref_NewProxy        :=Import('PyWeakref_NewProxy');
-  PyWeakref_NewRef          :=Import('PyWeakref_NewRef');
-  PyWrapper_New             :=Import('PyWrapper_New');
-  PyBool_FromLong           :=Import('PyBool_FromLong');
-  PyThreadState_SetAsyncExc :=Import('PyThreadState_SetAsyncExc');
+  PyBytes_AsString            := Import('PyBytes_AsString');
+  PyBytes_AsStringAndSize     := Import('PyBytes_AsStringAndSize');
+  PyBytes_Concat              := Import('PyBytes_Concat');
+  PyBytes_ConcatAndDel        := Import('PyBytes_ConcatAndDel');
+  PyBytes_FromString          := Import('PyBytes_FromString');
+  PyBytes_FromStringAndSize   := Import('PyBytes_FromStringAndSize');
+  PyBytes_Size                := Import('PyBytes_Size');
+  PyBytes_DecodeEscape        := Import('PyBytes_DecodeEscape');
+  PyBytes_Repr                := Import('PyBytes_Repr');
+  _PyBytes_Resize             := Import('_PyBytes_Resize');
+  PySys_GetObject             := Import('PySys_GetObject');
+  PySys_SetObject             := Import('PySys_SetObject');
+  PySys_SetPath               := Import('PySys_SetPath');
+  PyTraceBack_Here            := Import('PyTraceBack_Here');
+  PyTraceBack_Print           := Import('PyTraceBack_Print');
+  PyTuple_GetItem             := Import('PyTuple_GetItem');
+  PyTuple_GetSlice            := Import('PyTuple_GetSlice');
+  PyTuple_New                 := Import('PyTuple_New');
+  PyTuple_SetItem             := Import('PyTuple_SetItem');
+  PyTuple_Size                := Import('PyTuple_Size');
+  PyType_IsSubtype            := Import('PyType_IsSubtype');
+  PyType_GenericAlloc         := Import('PyType_GenericAlloc');
+  PyType_GenericNew           := Import('PyType_GenericNew');
+  PyType_Ready                := Import('PyType_Ready');
+  PyUnicode_FromWideChar      := Import(Format('PyUnicode%s_FromWideChar',[UnicodeSuffix]));
+  PyUnicode_FromString        := Import(Format('PyUnicode%s_FromString',[UnicodeSuffix]));
+  PyUnicode_FromStringAndSize := Import(Format('PyUnicode%s_FromStringAndSize',[UnicodeSuffix]));
+  PyUnicode_AsWideChar        := Import(Format('PyUnicode%s_AsWideChar',[UnicodeSuffix]));
+  PyUnicode_AsUTF8            := Import(Format('PyUnicode%s_AsUTF8',[UnicodeSuffix]));
+  PyUnicode_Decode            := Import(Format('PyUnicode%s_Decode',[UnicodeSuffix]));
+  PyUnicode_AsEncodedString   := Import(Format('PyUnicode%s_AsEncodedString',[UnicodeSuffix]));
+  PyUnicode_FromOrdinal       := Import(Format('PyUnicode%s_FromOrdinal',[UnicodeSuffix]));
+  PyUnicode_GetSize           := Import(Format('PyUnicode%s_GetSize',[UnicodeSuffix]));
+  PyWeakref_GetObject         := Import('PyWeakref_GetObject');
+  PyWeakref_NewProxy          := Import('PyWeakref_NewProxy');
+  PyWeakref_NewRef            := Import('PyWeakref_NewRef');
+  PyWrapper_New               := Import('PyWrapper_New');
+  PyBool_FromLong             := Import('PyBool_FromLong');
+  PyThreadState_SetAsyncExc   := Import('PyThreadState_SetAsyncExc');
   Py_AtExit                 :=Import('Py_AtExit');
   Py_FatalError             :=Import('Py_FatalError');
   Py_CompileStringExFlags     :=Import('Py_CompileStringExFlags');
@@ -4262,7 +4270,7 @@ procedure TPythonEngine.SetProgramArgs;
 var
   i, argc : Integer;
   wargv : array of PWideChar;
-  {$IFDEF UNIX}
+  {$IFDEF POSIX}
   UCS4L : array of UCS4String;
   {$ELSE}
   WL : array of UnicodeString;
@@ -4273,7 +4281,7 @@ begin
   argc := ParamCount;
   SetLength(wargv, argc + 1);
   // build the PWideChar array
-  {$IFDEF UNIX}
+  {$IFDEF POSIX}
   // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
   SetLength(UCS4L, argc+1);
   for i := 0 to argc do begin
@@ -5241,48 +5249,48 @@ begin
   case v.VType of
     vtInteger:       Result := PyLong_FromLong( v.VInteger );
     vtBoolean:       Result := PyLong_FromLong( Integer(v.VBoolean) );
-    vtChar:          Result := PyUnicode_FromAnsiString(AnsiString(v.VChar));
+    vtChar:          Result := PyUnicodeFromString(AnsiString(v.VChar));
     vtExtended:      Result := PyFloat_FromDouble( v.VExtended^ );
     vtString:
     begin
       if Assigned(v.VString) then
-        Result := PyUnicode_FromAnsiString(AnsiString(v.VString^))
+        Result := PyUnicodeFromString(AnsiString(v.VString^))
       else
-        Result := PyUnicode_FromAnsiString('');
+        Result := PyUnicodeFromString('');
     end;
-    vtPChar:         Result := PyUnicode_FromAnsiString(AnsiString(v.VPChar));
+    vtPChar:         Result := PyUnicodeFromString(AnsiString(v.VPChar));
     vtAnsiString:
     begin
       if Assigned(v.VAnsiString) then
-        Result := PyUnicode_FromAnsiString(PAnsiChar(v.VAnsiString))
+        Result := PyUnicodeFromString(PAnsiChar(v.VAnsiString))
       else
-        Result := PyUnicode_FromAnsiString('');;
+        Result := PyUnicodeFromString('');;
     end;
     vtCurrency:      Result := PyFloat_FromDouble( v.VCurrency^ );
     vtVariant:       Result := VariantAsPyObject( v.VVariant^ );
     vtPointer:       Result := v.VPointer;
     vtInt64:         Result := PyLong_FromLongLong( v.VInt64^ );
-    vtWideChar:      Result := PyUnicode_FromWideString( v.VWideChar );
+    vtWideChar:      Result := PyUnicodeFromString( v.VWideChar );
     vtPWideChar:
       begin
         if Assigned(v.VPWideChar) then
-          Result := PyUnicode_FromWideString( UnicodeString(v.VPWideChar) )
+          Result := PyUnicodeFromString( UnicodeString(v.VPWideChar) )
         else
-          Result := PyUnicode_FromWideString( '' );
+          Result := PyUnicodeFromString( '' );
       end;
     vtWideString:
       begin
         if Assigned(v.VWideString) then
-          Result := PyUnicode_FromWideString( WideString(v.VWideString) )
+          Result := PyUnicodeFromString( WideString(v.VWideString) )
         else
-          Result := PyUnicode_FromWideString( '' );
+          Result := PyUnicodeFromString( '' );
       end;
     vtUnicodeString:
       begin
         if Assigned(v.VUnicodeString) then
-          Result := PyUnicode_FromWideString( UnicodeString(v.VUnicodeString) )
+          Result := PyUnicodeFromString( UnicodeString(v.VUnicodeString) )
         else
-          Result := PyUnicode_FromWideString( '' );
+          Result := PyUnicodeFromString( '' );
       end;
   else
     Raise Exception.Create('Argument type not allowed');
@@ -5437,7 +5445,7 @@ begin
     raise EPythonError.Create('Could not create a new list object');
   for i := 0 to strings.Count - 1 do
     PyList_SetItem( Result, i,
-      PyUnicode_FromString( strings.Strings[i]) );
+      PyUnicodeFromString( strings.Strings[i]) );
 end;
 
 function TPythonEngine.StringsToPyTuple( strings : TStrings ) : PPyObject;
@@ -5449,7 +5457,7 @@ begin
     raise EPythonError.Create('Could not create a new tuple object');
   for i := 0 to strings.Count - 1 do
     PyTuple_SetItem( Result, i,
-      PyUnicode_FromString( strings.Strings[i]) );
+      PyUnicodeFromString( strings.Strings[i]) );
 end;
 
 procedure TPythonEngine.PyListToStrings( list : PPyObject; strings : TStrings );
@@ -5477,7 +5485,7 @@ end;
 function TPythonEngine.PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
 var
   _size : Integer;
-{$IFDEF unix}
+{$IFDEF POSIX}
   _ucs4Str : UCS4String;
 {$ENDIF}
 begin
@@ -5487,7 +5495,7 @@ begin
     _size := PyUnicode_GetSize(obj);
     if _size > 0 then
     begin
-{$IFDEF unix}
+{$IFDEF POSIX}
       // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
       SetLength(_ucs4Str, _size+1);
       if PyUnicode_AsWideChar(obj, @_ucs4Str[0], _size) <> _size then
@@ -5509,13 +5517,13 @@ begin
     raise EPythonError.Create('PyUnicode_AsWideString expects a Unicode Python object');
 end;
 
-function TPythonEngine.PyUnicode_FromWideString( const AString : UnicodeString) : PPyObject;
-{$IFDEF unix}
+function TPythonEngine.PyUnicodeFromString( const AString : UnicodeString) : PPyObject;
+{$IFDEF POSIX}
 var
   _ucs4Str : UCS4String;
 {$ENDIF}
 begin
-{$IFDEF unix}
+{$IFDEF POSIX}
   // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
   _ucs4Str := WideStringToUCS4String(AString);
   Result := PyUnicode_FromWideChar( {PWideChar}(@_ucs4Str[0]), Length(_ucs4Str)-1 {trim trailing zero});
@@ -5697,18 +5705,11 @@ begin
   Result := Assigned(FPyDateTime_DateType) and (Pointer(obj^.ob_type) = FPyDateTime_TZInfoType);
 end;
 
-function TPythonEngine.PyUnicode_FromString(const Str: string): PPyObject;
+function TPythonEngine.PyUnicodeFromString(const AString: AnsiString): PPyObject;
 begin
-  Result := PyUnicode_FromWideString(UnicodeString(str));
+  Result := PyUnicodeFromString(UnicodeString(AString));
 end;
 
-function TPythonEngine.PyUnicode_FromAnsiString(const Str: AnsiString): PPyObject;
-var
-  _text : UnicodeString;
-begin
-  _text := UnicodeString(str);
-  Result := PyUnicode_FromWideString(_text);
-end;
 
 (*******************************************************)
 (**                                                   **)
@@ -6400,7 +6401,7 @@ begin
   with Owner.Owner.Engine do
     begin
       if ErrorType = etString then
-        Error := PyUnicode_FromAnsiString(Text)
+        Error := PyUnicodeFromString(Text)
       else if ErrorType = etClass then
         begin
           if FParentClass.Name <> '' then
@@ -6449,7 +6450,7 @@ begin
             args := PyTuple_New(1);
             if not Assigned(args) then
               raise Exception.Create('TError.RaiseErrorObj: Could not create an empty tuple');
-            str := PyUnicode_FromAnsiString(msg);
+            str := PyUnicodeFromString(msg);
             PyTuple_SetItem(args, 0, str);
             res := PyEval_CallObjectWithKeywords(Error, args, nil);
             Py_DECREF(args);
@@ -6598,7 +6599,7 @@ begin
       if DocString.Text <> '' then
         begin
           doc :=
-            PyUnicode_FromString(CleanString(FDocString.Text, False));
+            PyUnicodeFromString(CleanString(FDocString.Text, False));
           PyObject_SetAttrString( FModule, '__doc__', doc );
           Py_XDecRef(doc);
           CheckError(False);
@@ -6901,7 +6902,7 @@ var
 begin
   with GetPythonEngine do
     begin
-      PyKey := PyUnicode_FromAnsiString(key);
+      PyKey := PyUnicodeFromString(key);
       try
         Result := PyObject_GenericGetAttr(GetSelf, PyKey)
       finally
@@ -6923,7 +6924,7 @@ end;
 function  TPyObject.Repr : PPyObject;
 begin
   Result :=
-    GetPythonEngine.PyUnicode_FromString( Format('<%s at %x>',
+    GetPythonEngine.PyUnicodeFromString( Format('<%s at %x>',
         [PythonType.TypeName, NativeInt(self)]) );
 end;
 
@@ -8404,7 +8405,7 @@ begin
       obj := GetValue;
       try
         Result :=
-          PyUnicode_FromString(Format('<%s: %s>',
+          PyUnicodeFromString(Format('<%s: %s>',
             [PythonType.TypeName, PyObjectAsString(obj)]) );
       finally
         Py_XDecRef(obj);
@@ -8647,16 +8648,16 @@ begin
               if PyErr_Occurred <> nil then
                 Result := nil
               else
-                Result := PyUnicode_FromWideString(PWideChar(Widetxt));
+                Result := PyUnicodeFromString(PWideChar(Widetxt));
             end else begin
               txt := IO.ReceiveData;
               if PyErr_Occurred <> nil then
                 Result := nil
               else
-                Result := PyUnicode_FromAnsiString(txt);
+                Result := PyUnicodeFromString(txt);
             end
           else
-            Result := PyUnicode_FromAnsiString(txt);
+            Result := PyUnicodeFromString(txt);
         end
       else
         Result := ReturnNone;
@@ -8710,7 +8711,7 @@ function pyio_GetTypesStats(self, args : PPyObject) : PPyObject;
     with GetPythonEngine do
       begin
         Result := PyTuple_New(4);
-        PyTuple_SetItem( Result, 0, PyUnicode_FromAnsiString(T.TypeName));
+        PyTuple_SetItem( Result, 0, PyUnicodeFromString(T.TypeName));
         PyTuple_SetItem( Result, 1, PyLong_FromLong(T.InstanceCount) );
         PyTuple_SetItem( Result, 2, PyLong_FromLong(T.CreateHits) );
         PyTuple_SetItem( Result, 3, PyLong_FromLong(T.DeleteHits) );
