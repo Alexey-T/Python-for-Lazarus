@@ -1472,7 +1472,7 @@ type
     PyObject_NewVar:function (t:PPyTypeObject; size:NativeInt):PPyObject; cdecl;
     PyObject_Free:procedure (ob:PPyObject); cdecl;
     PyObject_GetIter: function (obj: PPyObject) : PPyObject; cdecl;
-    PyIter_Check: function ( obj : PPyObject ) : Boolean;
+    //PyIter_Check: function ( obj : PPyObject ) : Boolean;
     PyIter_Next: function (obj: PPyObject) : PPyObject; cdecl;
     PyObject_IsInstance:function (inst, cls:PPyObject):integer; cdecl;
     PyObject_IsSubclass:function (derived, cls:PPyObject):integer; cdecl;
@@ -3421,7 +3421,7 @@ begin
   PyObject_NewVar           :=Import('_PyObject_NewVar');
   PyObject_Free             :=Import('PyObject_Free');
   PyObject_GetIter          :=Import('PyObject_GetIter');
-  PyIter_Check              :=Import('PyIter_Check');
+  //PyIter_Check              :=Import('PyIter_Check'); //missed in py 3.6 windows DLL
   PyIter_Next               :=Import('PyIter_Next');
   PyObject_IsInstance       :=Import('PyObject_IsInstance');
   PyObject_IsSubclass       :=Import('PyObject_IsSubclass');
