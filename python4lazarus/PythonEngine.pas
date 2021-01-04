@@ -107,44 +107,46 @@ type
     DllName      : String;
     RegVersion   : String;
     APIVersion   : Integer;
-    CanUseLatest : Boolean;
   end;
 
 const
 {$ifdef windows}
-  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+  PYTHON_KNOWN_VERSIONS: array[1..8] of TPythonVersionProp =
     (
-    (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python35.dll'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python36.dll'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python37.dll'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python38.dll'; RegVersion: '3.8'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'python39.dll'; RegVersion: '3.9'; APIVersion: 1013; CanUseLatest: True)
+    (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013),
+    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013),
+    (DllName: 'python35.dll'; RegVersion: '3.5'; APIVersion: 1013),
+    (DllName: 'python36.dll'; RegVersion: '3.6'; APIVersion: 1013),
+    (DllName: 'python37.dll'; RegVersion: '3.7'; APIVersion: 1013),
+    (DllName: 'python38.dll'; RegVersion: '3.8'; APIVersion: 1013),
+    (DllName: 'python39.dll'; RegVersion: '3.9'; APIVersion: 1013),
+    (DllName: 'python310.dll'; RegVersion: '3.10'; APIVersion: 1013)
     );
 {$endif}
 {$ifdef _so_files}
-  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+  PYTHON_KNOWN_VERSIONS: array[1..8] of TPythonVersionProp =
     (
-    (DllName: 'libpython3.3m.so'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.4m.so'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.5m.so'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.6m.so'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.7m.so'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.8m.so'; RegVersion: '3.8'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.9m.so'; RegVersion: '3.9'; APIVersion: 1013; CanUseLatest: True)
+    (DllName: 'libpython3.3m.so'; RegVersion: '3.3'; APIVersion: 1013),
+    (DllName: 'libpython3.4m.so'; RegVersion: '3.4'; APIVersion: 1013),
+    (DllName: 'libpython3.5m.so'; RegVersion: '3.5'; APIVersion: 1013),
+    (DllName: 'libpython3.6m.so'; RegVersion: '3.6'; APIVersion: 1013),
+    (DllName: 'libpython3.7m.so'; RegVersion: '3.7'; APIVersion: 1013),
+    (DllName: 'libpython3.8m.so'; RegVersion: '3.8'; APIVersion: 1013),
+    (DllName: 'libpython3.9m.so'; RegVersion: '3.9'; APIVersion: 1013),
+    (DllName: 'libpython3.10m.so'; RegVersion: '3.10'; APIVersion: 1013)
     );
 {$endif}
 {$ifdef darwin}
-  PYTHON_KNOWN_VERSIONS: array[1..7] of TPythonVersionProp =
+  PYTHON_KNOWN_VERSIONS: array[1..8] of TPythonVersionProp =
     (
-    (DllName: 'libpython3.3.dylib'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.4.dylib'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.5.dylib'; RegVersion: '3.5'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.6.dylib'; RegVersion: '3.6'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.7.dylib'; RegVersion: '3.7'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.8.dylib'; RegVersion: '3.8'; APIVersion: 1013; CanUseLatest: True),
-    (DllName: 'libpython3.9.dylib'; RegVersion: '3.9'; APIVersion: 1013; CanUseLatest: True)
+    (DllName: 'libpython3.3.dylib'; RegVersion: '3.3'; APIVersion: 1013),
+    (DllName: 'libpython3.4.dylib'; RegVersion: '3.4'; APIVersion: 1013),
+    (DllName: 'libpython3.5.dylib'; RegVersion: '3.5'; APIVersion: 1013),
+    (DllName: 'libpython3.6.dylib'; RegVersion: '3.6'; APIVersion: 1013),
+    (DllName: 'libpython3.7.dylib'; RegVersion: '3.7'; APIVersion: 1013),
+    (DllName: 'libpython3.8.dylib'; RegVersion: '3.8'; APIVersion: 1013),
+    (DllName: 'libpython3.9.dylib'; RegVersion: '3.9'; APIVersion: 1013),
+    (DllName: 'libpython3.10.dylib'; RegVersion: '3.10'; APIVersion: 1013)
     );
 {$endif}
 
@@ -1194,9 +1196,6 @@ type
   { TPythonInterface }
 
   TPythonInterface=class(TDynamicDll)
-  private
-    procedure DetectPythonVersionFromLibName(const Str: AnsiString);
-
   protected
     FInitialized:    Boolean;
     FFinalizing:     Boolean;
@@ -2686,6 +2685,8 @@ procedure MaskFPUExceptions(ExceptionsMasked : boolean;
 *)
 function CleanString(const s : AnsiString; AppendLF : Boolean = True) : AnsiString; overload;
 
+procedure DetectPythonVersionFromLibName(const LibName: string; out MajorVersion, MinorVersion: integer);
+
 implementation
 
 {$R *.dcr} //AT
@@ -2707,6 +2708,29 @@ begin
     Inc(buf);
   end;
   Result := true;
+end;
+
+procedure DetectPythonVersionFromLibName(const LibName: string; out MajorVersion, MinorVersion: integer);
+var
+  NPos: integer;
+  S: String;
+begin
+  //Win: "python310.dll"
+  //Linux: "libpython3.10.so"
+  S := LibName;
+  NPos := Pos('python', LowerCase(S));
+  if NPos>0 then
+  begin
+    Inc(NPos, Length('python'));
+    MajorVersion := StrToIntDef(S[NPos], 3);
+    Inc(NPos);
+    if LibName[NPos]='.' then
+      Inc(NPos);
+    S := Copy(S, NPos);
+    NPos := Pos('.', S);
+    if NPos > 1 then
+      MinorVersion := StrToIntDef(Copy(S, 1, NPos-1), 3);
+  end;
 end;
 
 (*******************************************************)
@@ -3084,29 +3108,11 @@ begin
   FAutoUnload := True;
 end;
 
-procedure TPythonInterface.DetectPythonVersionFromLibName(const Str: AnsiString);
-var
-  NPos: integer;
-begin
-  //Win: "python34.dll"
-  //Linux: "libpython3.4.so"
-  NPos := Pos('python', LowerCase(Str));
-  if NPos>0 then
-  begin
-    Inc(NPos, Length('python'));
-    FMajorVersion := StrToIntDef(Str[NPos], 3);
-    Inc(NPos);
-    if Str[NPos]='.' then
-      Inc(NPos);
-    FMinorVersion := StrToIntDef(Str[NPos], 3);
-  end;
-end;
-
 procedure TPythonInterface.AfterLoad;
 begin
   inherited;
 
-  DetectPythonVersionFromLibName(DLLName);
+  DetectPythonVersionFromLibName(DLLName, FMajorVersion, FMinorVersion);
   FBuiltInModuleName := 'builtins';
 
   try
@@ -4017,10 +4023,11 @@ end;
 
 procedure TPythonEngine.DoOpenDll(const aDllName : String);
 var
-  i : Integer;
+  NMajor, NMinor: Integer;
+  i: Integer;
 begin
   if UseLastKnownVersion then
-    for i:= Integer(COMPILED_FOR_PYTHON_VERSION_INDEX) to High(PYTHON_KNOWN_VERSIONS) do
+    for i:= Integer(COMPILED_FOR_PYTHON_VERSION_INDEX) downto 1 do
     begin
       RegVersion := PYTHON_KNOWN_VERSIONS[i].RegVersion;
       FDLLHandle := SafeLoadLibrary(GetDllPath+PYTHON_KNOWN_VERSIONS[i].DllName);
@@ -4030,9 +4037,12 @@ begin
         APIVersion := PYTHON_KNOWN_VERSIONS[i].APIVersion;
         Exit;
       end;
-      if not PYTHON_KNOWN_VERSIONS[i].CanUseLatest then
-        Break;
-    end;
+    end
+  else
+  begin
+    DetectPythonVersionFromLibName(aDllName, NMajor, NMinor);
+    RegVersion := Format('%d.%d', [NMajor, NMinor]);
+  end;
   inherited;
 end;
 
