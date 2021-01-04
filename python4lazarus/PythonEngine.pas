@@ -2670,6 +2670,8 @@ procedure PyObjectDestructor( pSelf : PPyObject); cdecl;
 procedure FreeSubtypeInst(ob:PPyObject); cdecl;
 procedure Register;
 function  PyType_HasFeature(AType : PPyTypeObject; AFlag : Integer) : Boolean;
+function  SysVersionFromDLLName(const DLLFileName : string): string;
+procedure PythonVersionFromDLLName(const LibName: string; out MajorVersion, MinorVersion: integer);
 
 { Helper functions}
 (*
@@ -2698,8 +2700,6 @@ procedure MaskFPUExceptions(ExceptionsMasked : boolean;
 *)
 function CleanString(const s : AnsiString; AppendLF : Boolean = True) : AnsiString; overload;
 
-procedure DetectPythonVersionFromLibName(const LibName: string; out MajorVersion, MinorVersion: integer);
-
 implementation
 
 {$R *.dcr} //AT
@@ -2721,29 +2721,6 @@ begin
     Inc(buf);
   end;
   Result := true;
-end;
-
-procedure DetectPythonVersionFromLibName(const LibName: string; out MajorVersion, MinorVersion: integer);
-var
-  NPos: integer;
-  S: String;
-begin
-  //Win: "python310.dll"
-  //Linux: "libpython3.10.so"
-  S := LibName;
-  NPos := Pos('python', LowerCase(S));
-  if NPos>0 then
-  begin
-    Inc(NPos, Length('python'));
-    MajorVersion := StrToIntDef(S[NPos], 3);
-    Inc(NPos);
-    if LibName[NPos]='.' then
-      Inc(NPos);
-    S := Copy(S, NPos);
-    NPos := Pos('.', S);
-    if NPos > 1 then
-      MinorVersion := StrToIntDef(Copy(S, 1, NPos-1), 3);
-  end;
 end;
 
 (*******************************************************)
@@ -3124,8 +3101,8 @@ end;
 procedure TPythonInterface.AfterLoad;
 begin
   inherited;
+  PythonVersionFromDLLName(DLLName, FMajorVersion, FMinorVersion);
 
-  DetectPythonVersionFromLibName(DLLName, FMajorVersion, FMinorVersion);
   FBuiltInModuleName := 'builtins';
 
   try
@@ -4055,10 +4032,7 @@ begin
       end;
     end
   else
-  begin
-    DetectPythonVersionFromLibName(aDllName, NMajor, NMinor);
-    RegVersion := Format('%d.%d', [NMajor, NMinor]);
-  end;
+    RegVersion := SysVersionFromDLLName(aDllName);
   inherited;
 end;
 
@@ -8774,6 +8748,14 @@ begin
                                 TPythonType, TPythonModule, TPythonDelphiVar]);
 end;
 
+function SysVersionFromDLLName(const DLLFileName : string): string;
+var
+  Minor, Major: integer;
+begin
+  PythonVersionFromDLLName(DLLFileName, Major, Minor);
+  Result := Format('%d.%d', [Major, Minor]);
+end;
+
 function PyType_HasFeature(AType : PPyTypeObject; AFlag : Integer) : Boolean;
 begin
   //(((t)->tp_flags & (f)) != 0)
@@ -8852,6 +8834,30 @@ begin
       end;
 end;
 {$ENDIF}
+
+procedure PythonVersionFromDLLName(const LibName: string; out MajorVersion, MinorVersion: integer);
+var
+  NPos: integer;
+  S: String;
+begin
+  //Win: "python310.dll"
+  //Linux: "libpython3.10.so"
+  S := LibName;
+  NPos := Pos('python', LowerCase(S));
+  if NPos>0 then
+  begin
+    Inc(NPos, Length('python'));
+    MajorVersion := StrToIntDef(S[NPos], 3);
+    Inc(NPos);
+    if LibName[NPos]='.' then
+      Inc(NPos);
+    S := Copy(S, NPos);
+    NPos := Pos('.', S);
+    if NPos > 1 then
+      MinorVersion := StrToIntDef(Copy(S, 1, NPos-1), 3);
+  end;
+end;
+
 
 end.
 
