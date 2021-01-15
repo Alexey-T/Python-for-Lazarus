@@ -43,7 +43,7 @@ uses
 
 const
   cPyLibraryWindows = 'python37.dll';
-  cPyLibraryLinux = 'libpython3.8.so'; //default in Ubuntu 20.x
+  cPyLibraryLinux = 'libpython3.8.so.1.0'; //default in Ubuntu 20.x
   cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
   cPyZipWindows = 'python37.zip';
 
