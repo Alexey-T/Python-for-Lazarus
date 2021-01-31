@@ -1743,6 +1743,8 @@ type
     FPyDateTime_DateTimeTZType:  PPyObject;
 
   protected
+    procedure  Initialize;
+    procedure  Finalize;
     procedure AfterLoad; override;
     procedure BeforeLoad; override;
     procedure DoOpenDll(const aDllName : String); override;
@@ -1768,8 +1770,6 @@ type
     destructor  Destroy; override;
 
     // Public methods
-    procedure  Initialize;
-    procedure  Finalize;
     procedure  SetPythonHome(const PythonHome: UnicodeString);
     procedure  SetProgramName(const ProgramName: UnicodeString);
     function   IsType(ob: PPyObject; obt: PPyTypeObject): Boolean;
