@@ -2607,27 +2607,23 @@ type
 {$HINTS OFF}
   TPythonThread = class(TThread)
   private
-    f_savethreadstate: PPyThreadState;
-    fInterpreterState: PPyInterpreterState;
     fThreadState:      PPyThreadState;
     fThreadExecMode:   TThreadExecMode;
+  private class threadvar
+    f_savethreadstate: PPyThreadState;
 
-// Do not overwrite Execute! Use ExecuteWithPython instead!
+    // Do not overwrite Execute! Use ExecuteWithPython instead!
     procedure Execute; override;
   protected
     procedure ExecuteWithPython; virtual; abstract;
-
+  public
     procedure Py_Begin_Allow_Threads;
     procedure Py_End_Allow_Threads;
-// The following procedures are redundant and only for
-// compatibility to the C API documentation.
+    // The following procedures are redundant and only for
+    // compatibility to the C API documentation.
     procedure Py_Begin_Block_Threads;
     procedure Py_Begin_Unblock_Threads;
 
-  public
-    property InterpreterState: PPyInterpreterState read  fInterpreterState
-                                                   write fInterpreterState
-                                                   default nil;
     property ThreadState: PPyThreadState read  fThreadState
                                          write fThreadState;
     property ThreadExecMode: TThreadExecMode read fThreadExecMode
@@ -8431,29 +8427,22 @@ end;
 
 procedure TPythonThread.Execute;
 var
-  withinterp: Boolean;
   global_state : PPyThreadState;
   gilstate : PyGILState_STATE;
 begin
-  withinterp := Assigned( fInterpreterState);
   with GetPythonEngine do
   begin
-    if withinterp then
+    if fThreadExecMode = emNewState then
     begin
-      fThreadExecMode := emNewState;
-      fThreadState := PyThreadState_New( fInterpreterState);
-      if Assigned(fThreadState) then
-      begin
-        PyEval_AcquireThread(fThreadState);
+      gilstate := PyGILState_Ensure();
+      try
+        fThreadState := GetThreadState;
         ExecuteWithPython;
-        PyEval_ReleaseThread( fThreadState);
-        PyThreadState_Clear(  fThreadState);
-        PyThreadState_Delete( fThreadState);
-      end else
-        raise EPythonError.Create( 'Could not create a new thread state');
-    end else {withinterp}
+      finally
+        PyGILState_Release(gilstate);
+      end;
+    end else {fThreadExecMode}
     begin
-      fThreadExecMode := emNewInterpreter;
       gilstate := PyGILState_Ensure();
       global_state := PyThreadState_Get;
       PyThreadState_Swap(nil);
