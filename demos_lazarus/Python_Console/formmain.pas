@@ -61,6 +61,12 @@ begin
     Result:= PyUnicode_FromString(PChar(S0));
 end;
 
+function Py_n1(Self, Args : PPyObject): PPyObject; cdecl;
+begin
+  with GetPythonEngine do
+    Result:= PyLong_FromLong(-100000);
+end;
+
 { TfmMain }
 
 procedure TfmMain.PythonInputOutput1SendData(Sender: TObject;
@@ -83,6 +89,7 @@ begin
   begin
     AddMethod('s0', @Py_s0, '');
     AddMethod('s1', @Py_s1, '');
+    AddMethod('n1', @Py_n1, '');
   end;
 end;
 
