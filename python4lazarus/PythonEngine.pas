@@ -1208,6 +1208,14 @@ type
 //-------------------------------------------------------
 
 type
+  // to solve https://github.com/pyscripter/python4delphi/issues/286
+{$ifdef windows}
+  Long = integer;
+{$else}
+  Long = NativeInt;
+{$endif}
+
+type
 
   { TPythonInterface }
 
@@ -1421,9 +1429,9 @@ type
     PyList_Size:function (ob:PPyObject):NativeInt; cdecl;
     PyList_Sort:function (ob:PPyObject):integer; cdecl;
     PyLong_AsDouble:function (ob:PPyObject):DOUBLE; cdecl;
-    PyLong_AsLong:function (ob:PPyObject):LONGINT; cdecl;
     PyLong_FromDouble:function (db:double):PPyObject; cdecl;
-    PyLong_FromLong:function (l:longint):PPyObject; cdecl;
+    PyLong_AsLong:function (ob:PPyObject):Long; cdecl;
+    PyLong_FromLong:function (l:Long):PPyObject; cdecl;
     PyLong_FromString:function (pc:PAnsiChar;var ppc:PAnsiChar;i:integer):PPyObject; cdecl;
     PyLong_FromUnsignedLong:function(val:LongWord): PPyObject; cdecl;
     PyLong_AsUnsignedLong:function(ob:PPyObject): LongWord; cdecl;
@@ -4978,8 +4986,8 @@ begin
     varShortInt,
     varWord,
     varLongWord,
-    varInteger:  Result := PyLong_FromLong( DeRefV );
-    varInt64:    Result := PyLong_FromLongLong( DeRefV );
+    varInteger:  Result := PyLong_FromLong( integer(DeRefV) );
+    varInt64:    Result := PyLong_FromLongLong( Int64(DeRefV) );
     varSingle,
     varDouble,
     varCurrency: Result := PyFloat_FromDouble( DeRefV );
