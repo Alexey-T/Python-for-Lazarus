@@ -42,10 +42,10 @@ uses
 {$R *.lfm}
 
 const
-  cPyLibraryWindows = 'python37.dll';
-  cPyLibraryLinux = 'libpython3.8.so.1.0'; //default in Ubuntu 20.x
-  cPyLibraryMac = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
-  cPyZipWindows = 'python37.zip';
+  cPyLibraryWindows: string = 'python37.dll';
+  cPyLibraryLinux: string = 'libpython3.8.so.1.0'; //default in Ubuntu 20.x
+  cPyLibraryMac: string = '/Library/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib';
+  cPyZipWindows: string = 'python37.zip';
 
 function Py_s0(Self, Args : PPyObject): PPyObject; cdecl;
 begin
@@ -144,6 +144,31 @@ begin
   PythonEngine.DllName:= ExtractFileName(S);
   PythonEngine.LoadDll;
 end;
+
+{$ifdef darwin}
+procedure InitMacLibPath;
+var
+  N: integer;
+  S: string;
+begin
+  for N:= 5 to 10 do
+  begin
+    S:= Format('/Library/Frameworks/Python.framework/Versions/3.%d/lib/libpython3.%d.dylib',
+      [N, N]);
+    if FileExists(S) then
+    begin
+      cPyLibraryMac:= S;
+      exit;
+    end;
+  end;
+end;
+{$endif}
+
+initialization
+
+  {$ifdef darwin}
+  InitMacLibPath;
+  {$endif}
 
 end.
 
