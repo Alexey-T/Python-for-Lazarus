@@ -1816,6 +1816,8 @@ type
     procedure  PyListToStrings( list : PPyObject; strings : TStrings );
     procedure  PyTupleToStrings( tuple: PPyObject; strings : TStrings );
     function   ReturnNone : PPyObject;
+    function   ReturnTrue : PPyObject;
+    function   ReturnFalse : PPyObject;
     function   FindModule( const ModuleName : AnsiString ) : PPyObject;
     function   FindFunction(ModuleName,FuncName: AnsiString): PPyObject;
     function   SetToList( data : Pointer; size : Integer ) : PPyObject;
@@ -1839,7 +1841,9 @@ type
     { String conversion }
     function PyUnicodeFromString(const AString : UnicodeString) : PPyObject; overload;
     function PyUnicodeFromString(const AString: AnsiString): PPyObject; overload;
-    function PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
+    function PyUnicodeAsString( obj : PPyObject ) : UnicodeString;
+    function PyUnicodeAsUTF8String( obj : PPyObject ) : RawByteString;
+    function PyBytesAsAnsiString( obj : PPyObject ) : AnsiString;
 
     // Public Properties
     property ClientCount : Integer read GetClientCount;
@@ -2715,6 +2719,16 @@ begin
   end;
   Result := true;
 end;
+
+(*******************************************************)
+(**                                                   **)
+(**            Resource strings                       **)
+(**                                                   **)
+(*******************************************************)
+resourcestring
+SPyConvertionError = 'Conversion Error: %s expects a %s Python object';
+SPyExcStopIteration = 'Stop Iteration';
+SPyExcSystemError = 'Unhandled SystemExit exception. Code: %s';
 
 (*******************************************************)
 (**                                                   **)
@@ -4574,7 +4588,7 @@ procedure TPythonEngine.RaiseError;
       tmp := PyObject_GetAttrString(err_value, 'filename');
       if tmp <> nil then begin
         if PyUnicode_Check(tmp) then
-          s_filename := PyUnicode_AsWideString(tmp)
+          s_filename := PyUnicodeAsString(tmp)
         else if tmp = Py_None then
           s_filename := '???';
         Py_XDECREF(tmp);
@@ -4582,7 +4596,7 @@ procedure TPythonEngine.RaiseError;
       // Get the text containing the error, cut of carriage return
       tmp := PyObject_GetAttrString(err_value, 'text');
       if Assigned(tmp) and PyUnicode_Check(tmp) then
-        s_line := Trim(PyUnicode_AsWideString(tmp));
+        s_line := Trim(PyUnicodeAsString(tmp));
       Py_XDECREF(tmp);
       // Get the offset where the error should appear
       tmp := PyObject_GetAttrString(err_value, 'offset' );
@@ -4597,7 +4611,7 @@ procedure TPythonEngine.RaiseError;
       // Get the message of the error
       tmp := PyObject_GetAttrString(err_value, 'msg' );
       if Assigned(tmp) and PyUnicode_Check(tmp) then
-        s_value := PyUnicode_AsWideString(tmp);
+        s_value := PyUnicodeAsString(tmp);
       Py_XDECREF(tmp);
     end;
     // If all is ok
@@ -4747,13 +4761,14 @@ begin
 
   if PyUnicode_Check(obj) then
   begin
-    W := PyUnicode_AsWideString(obj);
+    W := PyUnicodeAsString(obj);
     Result := string(W);
     Exit;
   end;
   S := PyObject_Str( obj );
   if Assigned(S) and PyUnicode_Check(S) then
-    Result := PyUnicode_AsWideString(S);
+    W := PyUnicodeAsString(S);
+    Result := string(W);
   Py_XDECREF(S);
 end;
 
@@ -5177,7 +5192,7 @@ begin
   else if PyLong_Check(obj) then
     Result := PyLong_AsLongLong(obj)
   else if PyUnicode_Check(obj) then
-    Result := PyUnicode_AsWideString(obj)
+    Result := PyUnicodeAsString(obj)
   else if PyBytes_Check(obj) then
     Result := AnsiString(PyBytes_AsString(obj))
   else if ExtractDate( Result ) then
@@ -5448,7 +5463,21 @@ begin
     strings.Add( PyObjectAsString( PyTuple_GetItem( tuple, i ) ) );
 end;
 
-function TPythonEngine.PyUnicode_AsWideString( obj : PPyObject ) : UnicodeString;
+function TPythonEngine.PyBytesAsAnsiString(obj: PPyObject): AnsiString;
+var
+  buffer: PAnsiChar;
+  size: NativeInt;
+begin
+  if PyBytes_Check(obj) then
+  begin
+     PyBytes_AsStringAndSize(obj, buffer, size);
+     SetString(Result, buffer, size);
+  end
+  else
+    raise EPythonError.CreateFmt(SPyConvertionError, ['PyBytesAsAnsiString', 'Bytes']);
+end;
+
+function TPythonEngine.PyUnicodeAsString( obj : PPyObject ) : UnicodeString;
 var
   _size : Integer;
 {$IFDEF POSIX}
@@ -5457,7 +5486,6 @@ var
 begin
   if PyUnicode_Check(obj) then
   begin
-    //_size := PySequence_Length(obj); //not fully correct for some Unicode
     _size := PyUnicode_GetSize(obj);
     if _size > 0 then
     begin
@@ -5480,10 +5508,29 @@ begin
       Result := '';
   end
   else
-    raise EPythonError.Create('PyUnicode_AsWideString expects a Unicode Python object');
+    raise EPythonError.CreateFmt(SPyConvertionError, ['PyUnicodeAsString', 'Unicode']);
 end;
 
-function TPythonEngine.PyUnicodeFromString( const AString : UnicodeString) : PPyObject;
+function TPythonEngine.PyUnicodeAsUTF8String( obj : PPyObject ) : RawByteString;
+var
+  buffer: PAnsiChar;
+  size: NativeInt;
+begin
+  if PyUnicode_Check(obj) then
+  begin
+    Result := '';
+    buffer := PyUnicode_AsUTF8AndSize(obj, @size);
+    if Assigned(buffer) then
+      SetString(Result, buffer, size)
+    else
+      Result := '';
+    SetCodePage(Result, CP_UTF8, False);
+  end
+  else
+    raise EPythonError.CreateFmt(SPyConvertionError, ['PyUnicodeAsUTF8String', 'Unicode']);
+end;
+
+function TPythonEngine.PyUnicodeFromString(const AString : UnicodeString) : PPyObject;
 {$IFDEF POSIX}
 var
   _ucs4Str : UCS4String;
@@ -5498,9 +5545,21 @@ begin
 {$ENDIF}
 end;
 
+function TPythonEngine.ReturnFalse : PPyObject;
+begin
+  Result := Py_False;
+  Py_INCREF( Result );
+end;
+
 function TPythonEngine.ReturnNone : PPyObject;
 begin
   Result := Py_None;
+  Py_INCREF( Result );
+end;
+
+function TPythonEngine.ReturnTrue : PPyObject;
+begin
+  Result := Py_True;
   Py_INCREF( Result );
 end;
 
@@ -8517,7 +8576,7 @@ begin
           if RedirectIO and (IO <> nil) and Assigned(a1) then
           begin
             if PyUnicode_Check(a1) then
-              IO.Write(PyUnicode_AsWideString(a1))
+              IO.Write(PyUnicodeAsString(a1))
             else
               IO.Write(IOString(PyObjectAsString(a1)));
           end;
