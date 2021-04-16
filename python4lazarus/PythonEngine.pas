@@ -4780,8 +4780,10 @@ begin
   end;
   S := PyObject_Str( obj );
   if Assigned(S) and PyUnicode_Check(S) then
+  begin
     W := PyUnicodeAsString(S);
     Result := string(W);
+  end;
   Py_XDECREF(S);
 end;
 
