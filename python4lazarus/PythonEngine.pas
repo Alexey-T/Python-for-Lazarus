@@ -1339,7 +1339,7 @@ type
     PyErr_BadInternalCall: procedure; cdecl;
     PyErr_CheckSignals: function: integer; cdecl;
     PyErr_Clear:        procedure; cdecl;
-    PyErr_Fetch:        procedure( errtype, errvalue, errtraceback: PPPyObject); cdecl;
+    PyErr_Fetch:        procedure(out errtype, errvalue, errtraceback: PPyObject); cdecl;
     PyErr_NoMemory:     function: PPyObject; cdecl;
     PyErr_Occurred:     function: PPyObject; cdecl;
     PyErr_Print:        procedure; cdecl;
@@ -1703,7 +1703,8 @@ type
       destructor Destroy; override;
 
       procedure Clear;
-      procedure Refresh;
+      procedure Refresh(pytraceback: PPyObject = nil);
+      procedure AddItem(const Context, FileName: string; LineNo: Integer);
 
       property ItemCount : Integer read GetItemCount;
       property Items[ idx : Integer ] : TTracebackItem read GetItem;
@@ -3771,6 +3772,18 @@ begin
   inherited;
 end;
 
+procedure TPythonTraceback.AddItem(const Context, FileName: string;
+  LineNo: Integer);
+var
+  Item: TTracebackItem;
+begin
+  Item := TTracebackItem.Create;
+  Item.Context := Context;
+  Item.FileName := FileName;
+  Item.LineNo := LineNo;
+  FItems.Add(Item);
+end;
+
 procedure TPythonTraceback.Clear;
 var
   i : Integer;
@@ -5653,14 +5666,32 @@ begin
 end;
 
 procedure TPythonEngine.CheckError(ACatchStopEx : Boolean = False);
-begin
-  if PyErr_Occurred <> nil then
+  procedure ProcessSystemExit;
+  var
+    errtype, errvalue, errtraceback: PPyObject;
+    SErrValue: string;
   begin
-    if ACatchStopEx and (PyErr_GivenExceptionMatches(PyErr_Occurred, PyExc_StopIteration^) <> 0) then
+    PyErr_Fetch(errtype, errvalue, errtraceback);
+    Traceback.Refresh(errtraceback);
+    SErrValue := PyObjectAsString(errvalue);
+    PyErr_Clear;
+    raise EPySystemExit.CreateResFmt(@SPyExcSystemError, [SErrValue]);
+  end;
+
+var
+  PyException: PPyObject;
+begin
+  PyException := PyErr_Occurred;
+  if PyException <> nil then
+  begin
+    if ACatchStopEx and (PyErr_GivenExceptionMatches(PyException, PyExc_StopIteration^) <> 0) then
     begin
       PyErr_Clear;
-      raise EPyStopIteration.Create('Stop iteration');
+      raise EPyStopIteration.CreateRes(@SPyExcStopIteration);
     end
+    else if PyErr_GivenExceptionMatches(PyException, PyExc_SystemExit^) <> 0 then
+    // Special treatment for SystemExit.  Calling PyErr_Print would terminate the process
+      ProcessSystemExit
     else
     begin
       PyErr_Print;
