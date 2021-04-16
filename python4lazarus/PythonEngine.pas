@@ -4764,9 +4764,9 @@ begin
 end;
 
 function TPythonEngine.PyObjectAsString( obj : PPyObject ) : string;
+//differs from Python4Delphi- Alexey
 var
   S : PPyObject;
-  W : UnicodeString;
 begin
   Result := '';
   if not Assigned( obj ) then
@@ -4774,15 +4774,13 @@ begin
 
   if PyUnicode_Check(obj) then
   begin
-    W := PyUnicodeAsString(obj);
-    Result := string(W);
+    Result := PyUnicodeAsUTF8String(obj);
     Exit;
   end;
   S := PyObject_Str( obj );
   if Assigned(S) and PyUnicode_Check(S) then
   begin
-    W := PyUnicodeAsString(S);
-    Result := string(W);
+    Result := PyUnicodeAsUTF8String(S);
   end;
   Py_XDECREF(S);
 end;
