@@ -25,8 +25,8 @@
     </CompilerOptions>
     <Description Value="Wrapper for Python engine, forked from Python4Delphi."/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="2"/>
-    <Files Count="4">
+    <Version Major="1" Minor="3"/>
+    <Files Count="5">
       <Item1>
         <Filename Value="python4lazarus_register.pas"/>
         <HasRegisterProc Value="True"/>
@@ -44,6 +44,10 @@
         <Filename Value="MethodCallBack.pas"/>
         <UnitName Value="MethodCallBack"/>
       </Item4>
+      <Item5>
+        <Filename Value="VarPyth.pas"/>
+        <UnitName Value="VarPyth"/>
+      </Item5>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="2">
