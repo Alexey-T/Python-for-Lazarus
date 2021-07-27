@@ -151,7 +151,7 @@ var
   N: integer;
   S: string;
 begin
-  for N:= 5 to 10 do
+  for N:= 11 downto 5 do
   begin
     S:= Format('/Library/Frameworks/Python.framework/Versions/3.%d/lib/libpython3.%d.dylib',
       [N, N]);
