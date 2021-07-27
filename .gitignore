@@ -33,3 +33,4 @@ backup/
 *.compiled
 demo
 project1
+TestPyThread
