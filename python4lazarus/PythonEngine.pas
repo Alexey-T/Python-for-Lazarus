@@ -1711,6 +1711,8 @@ type
       property Limit : Integer read FLimit write FLimit;
   end;
 
+  TPythonType = class; //forward declaration
+
   {$IF not Defined(FPC) and (CompilerVersion >= 23)}
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   {$IFEND}
@@ -1801,6 +1803,7 @@ type
     procedure  AddClient( client : TEngineClient );
     procedure  RemoveClient( client : TEngineClient );
     function   FindClient( const aName : AnsiString ) : TEngineClient;
+    function   FindPythonType( const TypeName : AnsiString ) : TPythonType;
     function   TypeByName( const aTypeName : AnsiString ) : PPyTypeObject;
     function   ModuleByName( const aModuleName : AnsiString ) : PPyObject;
     function   MethodsByName( const aMethodsContainer: AnsiString ) : PPyMethodDef;
@@ -2234,9 +2237,6 @@ type
 //--class:  TPythonType  derived from TGetSetContainer --
 //--                                                   --
 //-------------------------------------------------------
-
-type
-  TPythonType = class; //forward declaration
 
 {
         A                    B                                                      C
@@ -5588,6 +5588,19 @@ begin
     Result := nil;
 end;
 
+function TPythonEngine.FindPythonType(const TypeName: AnsiString): TPythonType;
+var
+  i : Integer;
+begin
+  Result := nil;
+  for i := 0 to ClientCount - 1 do
+    if (Clients[i] is TPythonType) and (TPythonType(Clients[i]).TypeName = TypeName) then
+    begin
+      Result := TPythonType(Clients[i]);
+      Break;
+    end;
+end;
+
 function TPythonEngine.FindFunction(ModuleName,FuncName: AnsiString): PPyObject;
 var
   module,func: PPyObject;
@@ -8707,22 +8720,6 @@ function pyio_GetTypesStats(self, args : PPyObject) : PPyObject;
       end;
   end;
 
-  function FindType( const TName : AnsiString ) : TPythonType;
-  var
-    i : Integer;
-  begin
-    Result := nil;
-    with GetPythonEngine do
-      for i := 0 to ClientCount - 1 do
-        if Clients[i] is TPythonType then
-          with TPythonType(Clients[i]) do
-            if TypeName = TName then
-              begin
-                Result := TPythonType(Clients[i]);
-                Break;
-              end;
-  end;
-
 var
   i : Integer;
   T : TPythonType;
@@ -8736,7 +8733,7 @@ begin
         for i := 0 to PyTuple_Size(args)-1 do
           begin
             str := AnsiString(PyObjectAsString( PyTuple_GetItem(args, i) ));
-            T := FindType( str );
+            T := FindPythonType( str );
             if Assigned(T) then
               begin
                 obj := HandleType( T );
