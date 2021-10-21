@@ -2614,9 +2614,9 @@ type
   private
     fThreadState:      PPyThreadState;
     fThreadExecMode:   TThreadExecMode;
-  private class threadvar
+  private class {$if FPC_FULLVERSION>=30200} threadvar {$else} var {$endif}
     f_savethreadstate: PPyThreadState;
-
+  private
     // Do not overwrite Execute! Use ExecuteWithPython instead!
     procedure Execute; override;
   protected
