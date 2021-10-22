@@ -1718,6 +1718,7 @@ type
   {$IFEND}
   TPythonEngine = class(TPythonInterface)
   private
+    FVenvPythonExe:              string;
     FInitScript:                 TStrings;
     FIO:                         TPythonInputOutput;
     FRedirectIO:                 Boolean;
@@ -1862,6 +1863,7 @@ type
     property ProgramName: UnicodeString read FProgramName write SetProgramName;
   published
     property AutoFinalize: Boolean read FAutoFinalize write FAutoFinalize default True;
+    property VenvPythonExe: string read FVenvPythonExe write FVenvPythonExe;
     property DatetimeConversionMode: TDatetimeConversionMode read FDatetimeConversionMode write FDatetimeConversionMode default DEFAULT_DATETIME_CONVERSION_MODE;
     property InitScript: TStrings read FInitScript write SetInitScript;
     property InitThreads: Boolean read FInitThreads write SetInitThreads default False;
@@ -4064,7 +4066,19 @@ procedure TPythonEngine.Initialize;
   procedure InitSysPath;
   var
     _path : PPyObject;
+  const Script =
+    'import sys' + sLineBreak +
+    'sys.executable = r"%s"' + sLineBreak +
+    'path = sys.path' + sLineBreak +
+    'for i in range(len(path)-1, -1, -1):' + sLineBreak +
+    '    if path[i].find("site-packages") > 0:' + sLineBreak +
+    '        path.pop(i)' + sLineBreak +
+    'import site' + sLineBreak +
+    'site.main()' + sLineBreak +
+    'del sys, path, i, site';
   begin
+     if VenvPythonExe <> '' then
+       ExecString(AnsiString(Format(Script, [VenvPythonExe])));
     _path := PySys_GetObject('path');
     if Assigned(FOnSysPathInit) then
       FOnSysPathInit(Self, _path);
