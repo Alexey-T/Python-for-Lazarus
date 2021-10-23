@@ -65,7 +65,7 @@ unit PythonEngine;
 {$ENDIF}
 
 {$ifdef UNIX}
-{$define POSIX} // to bo compatible with Python4Delphi
+{$define POSIX} // to be compatible with Python4Delphi
 {$endif}
 
 interface
@@ -176,17 +176,32 @@ type
   // Delphi equivalent used by TPyObject
   TRichComparisonOpcode = (pyLT, pyLE, pyEQ, pyNE, pyGT, pyGE);
 
-{$IFDEF WINDOWS}
+
+// C long is 8 bytes in non-Windows 64-bit operating systems
+// Same Delphi's LongInt but not fpc LongInt which is always 4 bytes
+// Hence the following
+{$IFDEF MSWINDOWS}
   C_Long = Integer;
   C_ULong = Cardinal;
 {$ELSE}
-  C_Long= NativeInt;
+  C_Long = NativeInt;
   C_ULong = NativeUInt;
+{$ENDIF}
+
+// wchar_t is 4 bytes on Linux/OS X/Android but 2 bytes on Windows
+{$IFDEF POSIX}
+  PWCharT = PUCS4Char;
+  PPWCharT = ^PUCS4Char;
+  WCharTString = UCS4String;
+{$ELSE}
+  PWCharT = PWideChar;
+  PPWCharT = PPWideChar;
+  WCharTString = UnicodeString;
 {$ENDIF}
 
 const
 {
-Type flags (tp_flags) introduced in version 2.0
+Type flags (tp_flags)
 
 These flags are used to change expected features and behavior for a
 particular type.
@@ -1210,8 +1225,17 @@ type
 //-------------------------------------------------------
 
 type
+  (*$HPPEMIT 'typedef int __cdecl (*TPyArg_Parse)(void * args, char * format, ...);' *)
+  TPyArg_Parse = function( args: PPyObject; format: PAnsiChar {;....}) :  Integer; cdecl varargs;
+  {$EXTERNALSYM TPyArg_Parse}
 
-  { TPythonInterface }
+  (*$HPPEMIT 'typedef int __cdecl (*TPyArg_ParseTupleAndKeywords)(void * args, void * kw, char * format, char** kwargs, ...);' *)
+  TPyArg_ParseTupleAndKeywords = function( args: PPyObject; kw: PPyObject; format: PAnsiChar; kwargs: PPAnsiChar {;...}): Integer; cdecl varargs;
+  {$EXTERNALSYM TPyArg_ParseTupleAndKeywords}
+
+  (*$HPPEMIT 'typedef int __cdecl (*TPy_BuildValue)(char * format, ...);' *)
+  TPy_BuildValue = function( format: PAnsiChar {;...}): Pointer; cdecl varargs;
+  {$EXTERNALSYM TPy_BuildValue}
 
   TPythonInterface=class(TDynamicDll)
   protected
@@ -1351,10 +1375,12 @@ type
     PyErr_WarnEx:       function (ob: PPyObject; text: PAnsiChar; stack_level: NativeInt): integer; cdecl;
     PyErr_WarnExplicit: function (ob: PPyObject; text: PAnsiChar; filename: PAnsiChar; lineno: integer; module: PAnsiChar; registry: PPyObject): integer; cdecl;
     PyImport_GetModuleDict: function: PPyObject; cdecl;
-    PyArg_Parse:        function( args: PPyObject; format: PAnsiChar {;....}) :  Integer; cdecl varargs;
-    PyArg_ParseTuple:   function( args: PPyObject; format: PAnsiChar {;...}): Integer; cdecl varargs;
-    PyArg_ParseTupleAndKeywords:   function( args: PPyObject; kw: PPyObject; format: PAnsiChar; kwargs: PPAnsiChar {;...}): Integer; cdecl varargs;
-    Py_BuildValue:      function( format: PAnsiChar {;...}): PPyObject; cdecl varargs;
+
+    PyArg_Parse:        TPyArg_Parse;
+    PyArg_ParseTuple:   TPyArg_Parse;
+    PyArg_ParseTupleAndKeywords:   TPyArg_ParseTupleAndKeywords;
+    Py_BuildValue:      TPy_BuildValue;
+
     Py_Initialize:      procedure; cdecl;
     Py_Exit:            procedure( RetVal: Integer); cdecl;
     PyEval_GetBuiltins: function: PPyObject; cdecl;
@@ -1382,7 +1408,7 @@ type
     PyRun_SimpleString:   function( str: PAnsiChar): Integer; cdecl;
     PyBytes_AsString:    function( ob: PPyObject): PAnsiChar; cdecl;
     PyBytes_AsStringAndSize: function( ob: PPyObject; var buffer: PAnsiChar; var size: NativeInt): integer; cdecl;
-    PySys_SetArgv:        procedure( argc: Integer; argv: PPWideChar); cdecl;
+    PySys_SetArgv:        procedure( argc: Integer; argv: PPWCharT); cdecl;
 
     PyCFunction_NewEx: function(md:PPyMethodDef;self, ob:PPyObject):PPyObject; cdecl;
 // Removed.  Use PyEval_CallObjectWithKeywords with third argument nil
@@ -1423,13 +1449,13 @@ type
     PyList_Size:function (ob:PPyObject):NativeInt; cdecl;
     PyList_Sort:function (ob:PPyObject):integer; cdecl;
     PyLong_AsDouble:function (ob:PPyObject):DOUBLE; cdecl;
-    PyLong_FromDouble:function (db:double):PPyObject; cdecl;
     PyLong_AsLong:function (ob:PPyObject):C_Long; cdecl;
+    PyLong_FromDouble:function (db:double):PPyObject; cdecl;
     PyLong_FromLong:function (l:C_Long):PPyObject; cdecl;
     PyLong_FromString:function (pc:PAnsiChar;var ppc:PAnsiChar;i:integer):PPyObject; cdecl;
     PyLong_FromUnsignedLong:function(val:C_ULong): PPyObject; cdecl;
     PyLong_AsUnsignedLong:function(ob:PPyObject): C_ULong; cdecl;
-    PyLong_FromUnicode:function(ob:PPyObject; a, b : integer): PPyObject; cdecl;
+    PyLong_FromUnicodeObject:function(ob:PPyObject; base : integer): PPyObject; cdecl;
     PyLong_FromLongLong:function(val:Int64): PPyObject; cdecl;
     PyLong_FromUnsignedLongLong:function(val:UInt64) : PPyObject; cdecl;
     PyLong_AsLongLong:function(ob:PPyObject): Int64; cdecl;
@@ -1465,7 +1491,6 @@ type
     PyNumber_Rshift:function (ob1,ob2:PPyObject):PPyObject; cdecl;
     PyNumber_Subtract:function (ob1,ob2:PPyObject):PPyObject; cdecl;
     PyNumber_Xor:function (ob1,ob2:PPyObject):PPyObject; cdecl;
-    PyOS_InitInterrupts:procedure; cdecl;
     PyOS_InterruptOccurred:function :integer; cdecl;
     PyObject_CallObject:function (ob,args:PPyObject):PPyObject; cdecl;
     PyObject_CallMethod : function ( obj : PPyObject; method, format : PAnsiChar {...}) : PPyObject; cdecl varargs;
@@ -1542,11 +1567,11 @@ type
     PyType_GenericAlloc:function(atype: PPyTypeObject; nitems:NativeInt) : PPyObject; cdecl;
     PyType_GenericNew:function(atype: PPyTypeObject; args, kwds : PPyObject) : PPyObject; cdecl;
     PyType_Ready:function(atype: PPyTypeObject) : integer; cdecl;
-    PyUnicode_FromWideChar:function (const w:PWideChar; size:NativeInt):PPyObject; cdecl;
+    PyUnicode_FromWideChar:function (const w:PWCharT; size:NativeInt):PPyObject; cdecl;
     PyUnicode_FromString:function (s:PAnsiChar):PPyObject; cdecl;
     PyUnicode_FromStringAndSize:function (s:PAnsiChar;i:NativeInt):PPyObject; cdecl;
     PyUnicode_FromKindAndData:function (kind:integer;const buffer:pointer;size:NativeInt):PPyObject; cdecl;
-    PyUnicode_AsWideChar:function (unicode: PPyObject; w:PWideChar; size:NativeInt):integer; cdecl;
+    PyUnicode_AsWideChar:function (unicode: PPyObject; w:PWCharT; size:NativeInt):integer; cdecl;
     PyUnicode_AsUTF8:function (unicode: PPyObject):PAnsiChar; cdecl;
     PyUnicode_AsUTF8AndSize:function (unicode: PPyObject; size: PNativeInt):PAnsiChar; cdecl;
     PyUnicode_Decode:function (const s:PAnsiChar; size: NativeInt; const encoding : PAnsiChar; const errors: PAnsiChar):PPyObject; cdecl;
@@ -1559,9 +1584,9 @@ type
     PyWeakref_NewRef: function ( ob, callback : PPyObject) : PPyObject; cdecl;
     PyWrapper_New: function ( ob1, ob2 : PPyObject) : PPyObject; cdecl;
     PyBool_FromLong: function ( ok : Integer) : PPyObject; cdecl;
-    PyThreadState_SetAsyncExc: function(t_id :C_ULong; exc :PPyObject) : Integer; cdecl;
+    PyThreadState_SetAsyncExc: function(t_id:C_ULong; exc:PPyObject) : Integer; cdecl;
     Py_AtExit:function (proc: AtExitProc):integer; cdecl;
-    Py_CompileStringExFlags:function (s1,s2:PAnsiChar;i:integer;flags:PPyCompilerFlags;optimize:integer):PPyObject; cdecl;
+    Py_CompileStringExFlags:function (str,filename:PAnsiChar;start:integer;flags:PPyCompilerFlags;optimize:integer):PPyObject; cdecl;
     Py_FatalError:procedure(s:PAnsiChar); cdecl;
     _PyObject_New:function (obt:PPyTypeObject;ob:PPyObject):PPyObject; cdecl;
     _PyBytes_Resize:function (var ob:PPyObject;i:NativeInt):integer; cdecl;
@@ -1571,20 +1596,20 @@ type
     PyEval_EvalCode                 : function ( co : PPyObject; globals, locals : PPyObject) : PPyObject; cdecl;
     Py_GetVersion                   : function : PAnsiChar; cdecl;
     Py_GetCopyright                 : function : PAnsiChar; cdecl;
-    Py_GetExecPrefix                : function : PAnsiChar; cdecl;
-    Py_GetPath                      : function : PAnsiChar; cdecl;
-    Py_SetPythonHome                : procedure (home : PWideChar); cdecl;
-    Py_GetPythonHome                : function : PWideChar; cdecl;
-    Py_GetPrefix                    : function : PAnsiChar; cdecl;
-    Py_GetProgramName               : function : PAnsiChar; cdecl;
+    Py_GetExecPrefix                : function : PWCharT; cdecl;
+    Py_GetPath                      : function : PWCharT; cdecl;
+    Py_SetPath                      : procedure (path: PWCharT); cdecl;
+    Py_SetPythonHome                : procedure (home : PWCharT); cdecl;
+    Py_GetPythonHome                : function : PWCharT; cdecl;
+    Py_GetPrefix                    : function : PWCharT; cdecl;
+    Py_GetProgramName               : function : PWCharT; cdecl;
 
     PyParser_SimpleParseStringFlags : function ( str : PAnsiChar; start, flags : Integer) : PNode; cdecl;
     PyNode_Free                     : procedure( n : PNode ); cdecl;
     PyErr_NewException              : function ( name : PAnsiChar; base, dict : PPyObject ) : PPyObject; cdecl;
-    Py_Malloc                       : function ( size : NativeInt ) : Pointer;
     PyMem_Malloc                    : function ( size : NativeUInt ) : Pointer;
 
-    Py_SetProgramName               : procedure( name: PWideChar); cdecl;
+    Py_SetProgramName               : procedure( name: PWCharT); cdecl;
     Py_IsInitialized                : function : integer; cdecl;
     Py_GetProgramFullPath           : function : PAnsiChar; cdecl;
     Py_NewInterpreter               : function : PPyThreadState; cdecl;
@@ -1609,14 +1634,49 @@ type
   // TODO - deal with the following:
   // the PyParser_* functions are deprecated in python 3.9 and will be removed in
   // Python 3.10
-  function PyParser_SimpleParseString( str : PAnsiChar; start : Integer) : PNode; cdecl;
-  function Py_CompileString( s1,s2:PAnsiChar;i:integer) : PPyObject; cdecl;
+  function PyParser_SimpleParseString(str : PAnsiChar; start : Integer) : PNode; cdecl;
+  function Py_CompileString(str,filename:PAnsiChar;start:integer) : PPyObject; cdecl;
 
   // functions redefined in Delphi
-  procedure   Py_INCREF   ( op: PPyObject);
-  procedure   Py_DECREF   ( op: PPyObject);
-  procedure   Py_XINCREF  ( op: PPyObject);
-  procedure   Py_XDECREF  ( op: PPyObject);
+  class procedure Py_INCREF(op: PPyObject); static; inline;
+  class procedure Py_DECREF(op: PPyObject); static; inline;
+  class procedure Py_XINCREF(op: PPyObject); static; inline;
+  class procedure Py_XDECREF(op: PPyObject); static; inline;
+  (* Safely decref `op` and set `op` to NULL, especially useful in tp_clear
+   * and tp_dealloc implementations.
+   *
+   * Note that "the obvious" code can be deadly:
+   *
+   *     Py_XDECREF(op);
+   *     op = NULL;
+   *
+   * Typically, `op` is something like self->containee, and `self` is done
+   * using its `containee` member.  In the code sequence above, suppose
+   * `containee` is non-NULL with a refcount of 1.  Its refcount falls to
+   * 0 on the first line, which can trigger an arbitrary amount of code,
+   * possibly including finalizers (like __del__ methods or weakref callbacks)
+   * coded in Python, which in turn can release the GIL and allow other threads
+   * to run, etc.  Such code may even invoke methods of `self` again, or cause
+   * cyclic gc to trigger, but-- oops! --self->containee still points to the
+   * object being torn down, and it may be in an insane state while being torn
+   * down.  This has in fact been a rich historic source of miserable (rare &
+   * hard-to-diagnose) segfaulting (and other) bugs.
+   *
+   * The safe way is:
+   *
+   *      Py_CLEAR(op);
+   *
+   * That arranges to set `op` to NULL _before_ decref'ing, so that any code
+   * triggered as a side-effect of `op` getting torn down no longer believes
+   * `op` points to a valid object.
+   *
+   * There are cases where it's safe to use the naive code, but they're brittle.
+   * For example, if `op` points to a Python integer, you know that destroying
+   * one of those can't cause problems -- but in part that relies on that
+   * Python integers aren't currently weakly referencable.  Best practice is
+   * to use Py_CLEAR() even if you can't think of a reason for why you need to.
+   *)
+  class procedure Py_CLEAR(var op: PPyObject); static; inline;
 
   function PyBytes_Check( obj : PPyObject ) : Boolean;
   function PyBytes_CheckExact( obj : PPyObject ) : Boolean;
@@ -3357,7 +3417,7 @@ begin
   PyLong_FromString         := Import('PyLong_FromString');
   PyLong_FromUnsignedLong   := Import('PyLong_FromUnsignedLong');
   PyLong_AsUnsignedLong     := Import('PyLong_AsUnsignedLong');
-  PyLong_FromUnicode        := Import('PyLong_FromUnicode');
+  PyLong_FromUnicodeObject  := Import('PyLong_FromUnicodeObject');
   PyLong_FromLongLong       := Import('PyLong_FromLongLong');
   PyLong_FromUnsignedLongLong := Import('PyLong_FromUnsignedLongLong');
   PyLong_AsLongLong         := Import('PyLong_AsLongLong');
@@ -3393,7 +3453,6 @@ begin
   PyNumber_Rshift           := Import('PyNumber_Rshift');
   PyNumber_Subtract         := Import('PyNumber_Subtract');
   PyNumber_Xor              := Import('PyNumber_Xor');
-  PyOS_InitInterrupts       := Import('PyOS_InitInterrupts');
   PyOS_InterruptOccurred    := Import('PyOS_InterruptOccurred');
   PyObject_CallObject       := Import('PyObject_CallObject');
   PyObject_CallMethod       := Import('PyObject_CallMethod');
@@ -3504,12 +3563,18 @@ begin
   Py_GetCopyright             := Import('Py_GetCopyright');
   Py_GetExecPrefix            := Import('Py_GetExecPrefix');
   Py_GetPath                  := Import('Py_GetPath');
+  Py_SetPath                  := Import('Py_SetPath');
   Py_SetPythonHome            := Import('Py_SetPythonHome');
   Py_GetPythonHome            := Import('Py_GetPythonHome');
   Py_GetPrefix                := Import('Py_GetPrefix');
   Py_GetProgramName           := Import('Py_GetProgramName');
-  PyParser_SimpleParseStringFlags := Import('PyParser_SimpleParseStringFlags');
-  PyNode_Free                 := Import('PyNode_Free');
+
+  if (FMajorVersion = 3) and (MinorVersion < 10) then
+  begin
+    PyParser_SimpleParseStringFlags := Import('PyParser_SimpleParseStringFlags');
+    PyNode_Free                 := Import('PyNode_Free');
+  end;
+
   PyErr_NewException          := Import('PyErr_NewException');
   try
     PyMem_Malloc := Import ('PyMem_Malloc');
@@ -3538,9 +3603,9 @@ begin
   PyGILState_Release       := Import('PyGILState_Release');
 end;
 
-function TPythonInterface.Py_CompileString(s1,s2:PAnsiChar;i:integer):PPyObject;
+function TPythonInterface.Py_CompileString(str,filename:PAnsiChar;start:integer):PPyObject;
 begin
-  Result := Py_CompileStringExFlags(s1, s2, i, nil, -1);
+  Result := Py_CompileStringExFlags(str, filename, start, nil, -1);
 end;
 
 function TPythonInterface.PyParser_SimpleParseString( str : PAnsiChar; start : integer) : PNode; cdecl;
@@ -3548,12 +3613,12 @@ begin
   Result := PyParser_SimpleParseStringFlags(str, start, 0);
 end;
 
-procedure TPythonInterface.Py_INCREF(op: PPyObject);
+class procedure TPythonInterface.Py_INCREF(op: PPyObject);
 begin
   Inc(op^.ob_refcnt);
 end;
 
-procedure TPythonInterface.Py_DECREF(op: PPyObject);
+class procedure TPythonInterface.Py_DECREF(op: PPyObject);
 begin
   with op^ do begin
     Dec(ob_refcnt);
@@ -3563,14 +3628,27 @@ begin
   end;
 end;
 
-procedure TPythonInterface.Py_XINCREF(op: PPyObject);
+class procedure TPythonInterface.Py_XINCREF(op: PPyObject);
 begin
   if op <> nil then Py_INCREF(op);
 end;
 
-procedure TPythonInterface.Py_XDECREF(op: PPyObject);
+class procedure TPythonInterface.Py_XDECREF(op: PPyObject);
 begin
   if op <> nil then Py_DECREF(op);
+end;
+
+
+class procedure TPythonInterface.Py_CLEAR(var op: PPyObject);
+Var
+  _py_tmp : PPyObject;
+begin
+  _py_tmp := op;
+  if _py_tmp <> nil then
+  begin
+    op := nil;
+    Py_DECREF(_py_tmp);
+  end;
 end;
 
 function TPythonInterface.PyBytes_Check( obj : PPyObject ) : Boolean;
@@ -4273,35 +4351,36 @@ end;
 
 procedure TPythonEngine.SetProgramArgs;
 var
-  i, argc : Integer;
-  wargv : array of PWideChar;
-  {$IFDEF POSIX}
-  UCS4L : array of UCS4String;
-  {$ELSE}
-  WL : array of UnicodeString;
-  {$ENDIF}
+  I, argc : Integer;
+  wargv : array of PWCharT;
+  WL : array of WCharTString;
+  TempS: UnicodeString;
 begin
   // we build a string list of the arguments, because ParamStr returns a volatile string
-  // and we want to build an array of PAnsiChar, pointing to valid strings.
+  // and we want to build an array of PWCharT, pointing to valid strings.
   argc := ParamCount;
   SetLength(wargv, argc + 1);
-  // build the PWideChar array
-  {$IFDEF POSIX}
-  // Note that Linux uses UCS4 strings, whereas it declares using UCS2 strings!!!
-  SetLength(UCS4L, argc+1);
-  for i := 0 to argc do begin
-    UCS4L[i] := WideStringToUCS4String(ParamStr(i));
-    wargv[i] := @UCS4L[i][0];
-  end;
-  {$ELSE}
+  // build the PWCharT array
   SetLength(WL, argc+1);
-  for i := 0 to argc do begin
-    WL[i] := UnicodeString(ParamStr(i));
-    wargv[i] := PWideChar(WL[i]);
+  for I := 0 to argc do begin
+    {
+       ... the first entry should refer to the script file to be executed rather
+       than the executable hosting the Python interpreter. If there isn’t a
+       script that will be run, the first entry in argv can be an empty string.
+    }
+    if I = 0 then
+      TempS := ''
+    else
+      TempS := ParamStr(I);
+    {$IFDEF POSIX}
+    WL[I] := UnicodeStringToUCS4String(TempS);
+    {$ELSE}
+    WL[I] := UnicodeString(TempS);
+    {$ENDIF}
+    wargv[I] := PWCharT(WL[I]);
   end;
-  {$ENDIF}
   // set the argv list of the sys module with the application arguments
-  PySys_SetArgv( argc + 1, PPWideChar(wargv) );
+  PySys_SetArgv( argc + 1, PPWCharT(wargv) );
 end;
 
 procedure TPythonEngine.InitWinConsole;
