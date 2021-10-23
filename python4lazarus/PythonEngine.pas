@@ -4048,15 +4048,19 @@ begin
             Finalize;
         end;
   // Then finalize Python, if we have to
-  if Initialized and FAutoFinalize then
+  if Initialized and FAutoFinalize then begin
     try
-      FFinalizing := True;
-      Py_Finalize;
-    finally
-      FFinalizing := False;
-      FInitialized := False;
+      try
+        FFinalizing := True;
+        Py_Finalize;
+      finally
+        FFinalizing := False;
+        FInitialized := False;
+      end;
+    except
     end;
-  // Detach our clients, when engine is beeing destroyed or one of its clients.
+  end;
+  // Detach our clients, when engine is being destroyed or one of its clients.
   canDetachClients := csDestroying in ComponentState;
   if not canDetachClients then
     for i := 0 to ClientCount - 1 do
@@ -4216,16 +4220,12 @@ begin
     raise Exception.Create('There is already one instance of TPythonEngine running' );
 
   gPythonEngine := Self;
-  //CheckRegistry; //AT: disabled
-  if Assigned(Py_SetProgramName) then
-  begin
-    if FProgramName = '' then
-      FProgramName := UnicodeString(ParamStr(0));
-    Py_SetProgramName(PWideChar(FProgramName));
-  end;
+  CheckRegistry;
+  if Assigned(Py_SetProgramName) and (Length(FProgramName) > 0) then
+    Py_SetProgramName(PWCharT(FProgramName));
   AssignPyFlags;
-  if FPythonHome <> '' then
-    Py_SetPythonHome(PWideChar(FPythonHome));
+  if Length(FPythonHome) > 0 then
+    Py_SetPythonHome(PWCharT(FPythonHome));
   Py_Initialize;
   if Assigned(Py_IsInitialized) then
     FInitialized := Py_IsInitialized() <> 0
@@ -5094,8 +5094,8 @@ begin
     varShortInt,
     varWord,
     varLongWord,
-    varInteger:  Result := PyLong_FromLong( integer(DeRefV) );
-    varInt64:    Result := PyLong_FromLongLong( Int64(DeRefV) );
+    varInteger:  Result := PyLong_FromLong( LongInt(DeRefV) );
+    varInt64:    Result := PyLong_FromLongLong( DeRefV );
     varSingle,
     varDouble,
     varCurrency: Result := PyFloat_FromDouble( DeRefV );
@@ -5108,7 +5108,7 @@ begin
         begin
           wd := (DayOfWeek( dt ) + 7 - 2) mod 7; // In Python, Monday is the first day (=0)
           jd := Round(EncodeDate(y,m,d)-EncodeDate(y,1,1))+1; // This shoud be the Julian day, the day in a year (0-366)
-          dl := -1; // This is daylight save... ??????? I don't know what it is...
+          dl := -1; // This is daylight save... ?Ξ?Ξ? I don't know what it is...
           Result := ArrayToPyTuple( [y, m, d, h, mi, sec, wd, jd, dl] );
         end
         else if (DatetimeConversionMode = dcmToDatetime) then
@@ -5132,7 +5132,7 @@ begin
           wStr := ''
         else
           wStr := DeRefV;
-        Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
+        Result := PyUnicodeFromString(wStr);
       end;
     varString:
       begin
@@ -5141,8 +5141,8 @@ begin
       end;
     varUString:
       begin
-       wStr := DeRefV;
-        Result := PyUnicode_FromWideChar( PWideChar(wStr), Length(wStr) );
+        wStr := DeRefV;
+        Result := PyUnicodeFromString(wStr);
       end;
   else
     if VarType(DeRefV) and varArray <> 0 then
