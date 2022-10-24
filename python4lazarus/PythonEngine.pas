@@ -3482,7 +3482,10 @@ begin
   PyObject_Call             := Import('PyObject_Call');
   PyObject_GenericGetAttr   := Import('PyObject_GenericGetAttr');
   PyObject_GenericSetAttr   := Import('PyObject_GenericSetAttr');
-  PyObject_GC_Malloc        := Import('_PyObject_GC_Malloc');
+  if (fMajorVersion = 3) and (fMinorVersion <= 10) then
+  begin
+    PyObject_GC_Malloc        := Import('_PyObject_GC_Malloc');
+  end;
   PyObject_GC_New           := Import('_PyObject_GC_New');
   PyObject_GC_NewVar        := Import('_PyObject_GC_NewVar');
   PyObject_GC_Resize        := Import('_PyObject_GC_Resize');
