@@ -6524,6 +6524,7 @@ begin
   begin
     Name := TError(Source).Name;
     Text := TError(Source).Text;
+    ErrorType := TError(Source).ErrorType;
     Exit;
   end;
   inherited Assign(Source);
