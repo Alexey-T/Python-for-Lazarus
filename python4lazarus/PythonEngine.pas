@@ -6939,11 +6939,12 @@ begin
   with Engine do
     begin
       obj := GetVar( varName );
-      try
-        Result := PyObjectAsVariant( obj );
-      finally
-        Py_XDecRef(obj);
-      end;
+      if Assigned(obj) then
+        try
+          Result := PyObjectAsVariant( obj );
+        finally
+          Py_XDecRef(obj);
+        end;
     end;
 end;
 
