@@ -64,10 +64,6 @@ unit PythonEngine;
 {$define _so_files}
 {$ENDIF}
 
-{$ifdef UNIX}
-{$define POSIX} // to be compatible with Python4Delphi
-{$endif}
-
 interface
 
 uses

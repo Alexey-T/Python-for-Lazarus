@@ -26,9 +26,6 @@
 (**************************************************************************)
 
 {$I Definition.Inc}
-{$IFDEF CPUARM}
-  {$DEFINE CPUARM32}
-{$ENDIF}
 
 unit MethodCallBack;
 
