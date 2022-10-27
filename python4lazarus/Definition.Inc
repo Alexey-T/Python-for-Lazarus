@@ -21,25 +21,6 @@
 (* Dr. Dietmar Budelsky, 1998-01-07                                       *)
 (**************************************************************************)
 
-{$IFDEF FPC}
-  {$IFDEF CPUARM}
-    {$DEFINE CPUARM32}
-  {$ENDIF}
-
-  {$IFDEF CPUAARCH64}
-    {$DEFINE CPUARM}
-    {$DEFINE CPUARM64}
-  {$ENDIF}
-
-  {$IFDEF DARWIN}
-    {$DEFINE OSX}
-  {$ENDIF}
-
-  {$IFDEF UNIX}
-    {$DEFINE POSIX}
-  {$ENDIF}
-{$ENDIF}
-
 /////////////////////////////////////////////////////////////////////////////
 // Delphi, C++ Builder versions
 /////////////////////////////////////////////////////////////////////////////
@@ -223,22 +204,43 @@
 
 {$IFDEF FPC}
   {$MODE DELPHI}
+
   {$IFDEF CPU64}
     {$DEFINE CPU64BITS}
   {$ENDIF CPU64}
-  {$IFDEF CPU386}
+
+  {$IFDEF CPU86}
     {$DEFINE CPUX86}
-  {$ENDIF CPU32}
+  {$ENDIF CPU86}
+
   {$IFDEF DARWIN}
+    {$DEFINE OSX}
     {$DEFINE MACOS}
-    {$DEFINE ALIGN_STACK}
     {$IFDEF CPU32}
       {$DEFINE MACOS32}
     {$ENDIF CPU32}
+    {$IFDEF CPU64}
+      {$DEFINE MACOS64}
+      {$DEFINE OSX64}
+    {$ENDIF CPU64}
   {$ENDIF DARWIN}
+
+  {$IFDEF CPUARM}
+    {$DEFINE CPUARM32}
+  {$ENDIF}
+
+  {$IFDEF CPUAARCH64}
+    {$DEFINE CPUARM}
+    {$DEFINE CPUARM64}
+  {$ENDIF}
+  
   {$IFDEF UNIX}
     {$DEFINE POSIX}
   {$ENDIF UNIX}
+
+  {$IFDEF ANDROID}
+    {$DEFINE POSIX}
+  {$ENDIF ANDROID}
 {$ENDIF FPC}
 
 {$IFDEF DELPHIXE_OR_HIGHER}
@@ -249,8 +251,6 @@
   {$LEGACYIFEND ON}
 {$ENDIF DELPHIXE4_OR_HIGHER}
 
-{$IFDEF DELPHIXE2_OR_HIGHER}
-  {$IFDEF MACOS}
-    {$DEFINE DARWIN}
-  {$ENDIF MACOS}
-{$ENDIF DELPHIXE2_OR_HIGHER}
+{$IFDEF MACOS}
+  {$DEFINE DARWIN}
+{$ENDIF MACOS}
