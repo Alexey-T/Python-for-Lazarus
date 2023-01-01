@@ -2358,7 +2358,7 @@ type
 
     // Constructors & Destructors
     constructor Create( APythonType : TPythonType ); virtual;
-    constructor CreateWith( APythonType : TPythonType; args : PPyObject ); virtual;
+    constructor CreateWith(APythonType: TPythonType; args, kwds: PPyObject); virtual;
     destructor  Destroy; override;
 
     class function NewInstance: TObject; override;
@@ -2547,7 +2547,7 @@ type
       procedure SetServices( val : TTypeServices );
       procedure SetTypeName( const val : AnsiString );
       procedure SetBaseType(AType: TPythonType);
-      function  CreateMethod( pSelf, args : PPyObject ) : PPyObject; cdecl;
+      function  CreateMethod(pSelf, args, kwds: PPyObject): PPyObject; cdecl;
       procedure InitServices;
       procedure SetDocString( value : TStringList );
       function  TypeFlagsAsInt : C_ULong;
@@ -2571,7 +2571,7 @@ type
       procedure Initialize; override;
       procedure Finalize; override;
       function  CreateInstance : PPyObject;
-      function  CreateInstanceWith( args : PPyObject ) : PPyObject;
+      function CreateInstanceWith(args, kwds: PPyObject): PPyObject;
       procedure AddTypeVar;
 
       property TheType : PyTypeObject read FType write FType;
@@ -2660,7 +2660,7 @@ type
 
     // Constructors & Destructors
     constructor Create( APythonType : TPythonType ); override;
-    constructor CreateWith( APythonType : TPythonType; args : PPyObject ); override;
+    constructor CreateWith(APythonType: TPythonType; args, kwds: PPyObject); override;
     destructor  Destroy; override;
 
     // Type services
@@ -7015,7 +7015,8 @@ begin
   end;
 end;
 
-constructor TPyObject.CreateWith( APythonType : TPythonType; args : PPyObject );
+constructor TPyObject.CreateWith(APythonType: TPythonType; args, kwds:
+    PPyObject);
 begin
   Create( APythonType );
 end;
@@ -7576,9 +7577,9 @@ begin
     end;
 end;
 
-function  TPythonType.CreateMethod( pSelf, args : PPyObject ) : PPyObject;
+function TPythonType.CreateMethod(pSelf, args, kwds: PPyObject): PPyObject;
 begin
-  Result := CreateInstanceWith( args );
+  Result := CreateInstanceWith(args, kwds);
 end;
 
 procedure TPythonType.ReallocGetSets;
@@ -7755,7 +7756,7 @@ begin
     obj.ob_type := aType;
     obj.IsSubtype := aType <> @FType;
     obj.PythonAlloc := True;
-    obj.CreateWith(Self, args);
+    obj.CreateWith(Self, args, kwds);
     if Engine.PyErr_Occurred <> nil then
     begin
       Engine.Py_DECREF(Result);
@@ -8229,14 +8230,14 @@ begin
     end;
 end;
 
-function TPythonType.CreateInstanceWith( args : PPyObject ) : PPyObject;
+function TPythonType.CreateInstanceWith(args, kwds: PPyObject): PPyObject;
 var
   obj : TPyObject;
 begin
   CheckEngine;
   with Engine do
     begin
-      obj := PyObjectClass.CreateWith( Self, args );
+      obj := PyObjectClass.CreateWith(Self, args, kwds);
       obj.ob_type := @FType;
       if PyErr_Occurred <> nil then
       begin
@@ -8251,7 +8252,7 @@ end;
 procedure TPythonType.AddTypeVar;
 var
   d : PPyObject;
-  meth : TDelphiMethod;
+  meth : TDelphiMethodWithKW;
 begin
   CheckEngine;
   Assert(Module <> nil);
@@ -8264,8 +8265,8 @@ begin
     begin
       meth := CreateMethod;
       FCreateFuncDef.ml_name  := PAnsiChar(FCreateFuncName);
-      FCreateFuncDef.ml_meth  := GetOfObjectCallBack( TCallBack(meth), 2, DEFAULT_CALLBACK_TYPE);
-      FCreateFuncDef.ml_flags := METH_VARARGS;
+      FCreateFuncDef.ml_meth  := GetOfObjectCallBack(TCallBack(meth), 3, DEFAULT_CALLBACK_TYPE);
+      FCreateFuncDef.ml_flags := METH_KEYWORDS;
       FCreateFuncDef.ml_doc   := PAnsiChar(FCreateFuncDoc);
       FCreateFunc := Engine.PyCFunction_NewEx(@FCreateFuncDef, nil, nil);
       Engine.Py_INCREF(FCreateFunc);
@@ -8504,7 +8505,7 @@ end;
 // the Create constructor first, and because the constructors
 // are virtual, TPyVar.Create will be automatically be called.
 
-constructor TPyVar.CreateWith( APythonType : TPythonType; args : PPyObject );
+constructor TPyVar.CreateWith(APythonType: TPythonType; args, kwds: PPyObject);
 begin
   inherited;
   with GetPythonEngine do
