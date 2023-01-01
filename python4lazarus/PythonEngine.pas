@@ -2546,6 +2546,7 @@ type
       procedure SetModule( val : TPythonModule );
       procedure SetServices( val : TTypeServices );
       procedure SetTypeName( const val : AnsiString );
+      procedure SetBaseType(AType: TPythonType);
       function  CreateMethod( pSelf, args : PPyObject ) : PPyObject; cdecl;
       procedure InitServices;
       procedure SetDocString( value : TStringList );
@@ -2576,6 +2577,7 @@ type
       property TheType : PyTypeObject read FType write FType;
       property TheTypePtr : PPyTypeObject read GetTypePtr;
       property PyObjectClass : TPyObjectClass read FPyObjectClass write SetPyObjectClass stored False;
+      property BaseType: TPythonType write SetBaseType;
       property InstanceCount : Integer read FInstanceCount;
       property CreateHits : Integer read FCreateHits;
       property DeleteHits : Integer read FDeleteHits;
@@ -7599,6 +7601,14 @@ begin
 exit;
   if tpfBaseType in TypeFlags then
     FType.tp_methods := MethodsData;
+end;
+
+procedure TPythonType.SetBaseType(AType: TPythonType);
+begin
+  if AType = nil then
+    FType.tp_base := nil
+  else
+    FType.tp_base := @AType.FType;
 end;
 
 procedure TPythonType.SetDocString( value : TStringList );
