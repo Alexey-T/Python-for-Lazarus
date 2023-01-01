@@ -4118,8 +4118,10 @@ begin
       end;
     end
   else
+  begin
     RegVersion := SysVersionFromDLLName(aDllName);
-  inherited;
+    inherited;
+  end;
 end;
 
 procedure TPythonEngine.AssignPyFlags;
