@@ -1,7 +1,6 @@
 {-----------------------------------------------------------------------------
  Unit Name: PythonVersions
- Author:    Kiriakos
- Date:      PyScripter
+ Author:    PyScripter
  Purpose:   Discover and get info about Python versions
             Part of the Python for Delphi library
 
@@ -105,13 +104,7 @@ end;
 function TPythonVersion.ExpectedArchitecture: string;
 begin
   Result := '';
-  {$IFDEF CPUX64}
-  Result := '64bit';
-  {$ENDIF}
-  {$IFDEF CPU64}
-  Result := '64bit';
-  {$ENDIF}
-  {$IFDEF CPU64bits}
+  {$IF Defined(CPUX64) or Defined(CPU64) or Defined(CPU64bits)}
   Result := '64bit';
   {$ENDIF}
   if Result = '' then
@@ -173,17 +166,24 @@ end;
 function TPythonVersion.GetHelpFile: string;
 var
   PythonHelpFilePath: string;
+  HtmlIndex: string;
   Res: Integer;
   SR: TSearchRec;
 begin
   Result := FHelpFile;
-  // for unregistered Python
-  if (Result = '') and (InstallPath <> '') then
+  // for unregistered Python or python 11
+  if ((Result = '') or (ExtractFileExt(Result) = '.html')) and (InstallPath <> '') then
   begin
-    PythonHelpFilePath := InstallPath + '\Doc\python*.chm';
+    PythonHelpFilePath := IncludeTrailingPathDelimiter(InstallPath) + 'Doc\python*.chm';
     Res := FindFirst(PythonHelpFilePath, faAnyFile, SR);
     if Res = 0 then
-      Result := InstallPath + '\Doc\' + SR.Name;
+      Result := IncludeTrailingPathDelimiter(InstallPath) + 'Doc\' + SR.Name
+    else if Result = '' then
+    begin
+      HtmlIndex := IncludeTrailingPathDelimiter(InstallPath) + 'Doc\html\index.html';
+      if FileExists(HtmlIndex) then
+        Result := HtmlIndex;
+    end;
     FindClose(SR);
   end;
 end;
