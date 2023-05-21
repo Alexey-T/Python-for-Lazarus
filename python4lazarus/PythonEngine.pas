@@ -4028,10 +4028,15 @@ begin
   GlobalVars := nil;
   Destroying;
   Finalize;
+{$IFDEF FPC} // See https://github.com/Alexey-T/Python-for-Lazarus/issues/29
+  inherited;
+{$ENDIF}
   FClients.Free;
   FInitScript.Free;
   FTraceback.Free;
+{$IFNDEF FPC}
   inherited;
+{$ENDIF}
 end;
 
 procedure TPythonEngine.Finalize;
