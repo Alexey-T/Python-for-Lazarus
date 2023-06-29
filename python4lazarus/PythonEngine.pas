@@ -6055,6 +6055,10 @@ end;
 
 destructor TEngineClient.Destroy;
 begin
+  // if the client is destroyed before the Python Engine then
+  // we need to finalize it.  Otherwise it will already be finalized
+  if FInitialized then
+    Finalize;
   Engine := nil; // This detaches the client from the Engine.
   if Assigned( FOnDestroy ) then
     FOnDestroy( Self );
@@ -8306,7 +8310,8 @@ end;
 
 procedure TPythonType.Finalize;
 begin
-  Engine.Py_CLEAR(FCreateFunc);
+  if Assigned(Engine) then
+    Engine.Py_CLEAR(FCreateFunc);
   FCreateFunc := nil;
   inherited;
 end;
