@@ -4023,11 +4023,15 @@ begin
 end;
 
 destructor TPythonEngine.Destroy;
+var
+  I: Integer;
 begin
   LocalVars := nil;
   GlobalVars := nil;
   Destroying;
   Finalize;
+  for I := 0 to ClientCount - 1 do
+    Clients[I].ClearEngine;
 {$IFDEF FPC} // See https://github.com/Alexey-T/Python-for-Lazarus/issues/29
   inherited;
 {$ENDIF}
@@ -4042,7 +4046,6 @@ end;
 procedure TPythonEngine.Finalize;
 var
   i: integer;
-  canDetachClients : Boolean;
 begin
   // switch off redirection when the component is destroying,
   // because the form or datamodule is beeing closed, and
@@ -4076,21 +4079,6 @@ begin
       end;
     except
     end;
-  end;
-  // Detach our clients, when engine is being destroyed or one of its clients.
-  canDetachClients := csDestroying in ComponentState;
-  if not canDetachClients then
-    for i := 0 to ClientCount - 1 do
-      if csDestroying in Clients[i].ComponentState then
-      begin
-        canDetachClients := True;
-        Break;
-      end;
-  if canDetachClients then
-  begin
-    for i := 0 to ClientCount - 1 do
-      Clients[i].ClearEngine;
-    FClients.Clear;
   end;
   // Free our reference
   gPythonEngine               := nil;
