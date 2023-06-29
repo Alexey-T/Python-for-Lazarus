@@ -160,6 +160,8 @@ const
 
   METH_VARARGS  = $0001;
   METH_KEYWORDS = $0002;
+  METH_CLASS    = $0010;
+  METH_STATIC   = $0020;
 
   // Masks for the co_flags field of PyCodeObject
   CO_OPTIMIZED   = $0001;
@@ -2093,6 +2095,12 @@ type
                            AMethod  : PyCFunction;
                            ADocString : PAnsiChar ) : PPyMethodDef;
       function  AddMethodWithKeywords( AMethodName  : PAnsiChar;
+                                       AMethod  : PyCFunctionWithKW;
+                                       ADocString : PAnsiChar ) : PPyMethodDef;
+      function  AddClassMethodWithKeywords( AMethodName  : PAnsiChar;
+                                       AMethod  : PyCFunctionWithKW;
+                                       ADocString : PAnsiChar ) : PPyMethodDef;
+      function  AddStaticMethodWithKeywords( AMethodName  : PAnsiChar;
                                        AMethod  : PyCFunctionWithKW;
                                        ADocString : PAnsiChar ) : PPyMethodDef;
       function  AddDelphiMethod( AMethodName  : PAnsiChar;
@@ -6280,6 +6288,20 @@ begin
                        PyCFunction(AMethod),
                        ADocString );
   Result^.ml_flags := Result^.ml_flags or METH_KEYWORDS;
+end;
+
+function TMethodsContainer.AddStaticMethodWithKeywords(AMethodName: PAnsiChar;
+  AMethod: PyCFunctionWithKW; ADocString: PAnsiChar): PPyMethodDef;
+begin
+  Result := AddMethodWithKeywords(AMethodName, AMethod, ADocString);
+  Result^.ml_flags := Result^.ml_flags or METH_STATIC;
+end;
+
+function TMethodsContainer.AddClassMethodWithKeywords(AMethodName: PAnsiChar;
+  AMethod: PyCFunctionWithKW; ADocString: PAnsiChar): PPyMethodDef;
+begin
+  Result := AddMethodWithKeywords(AMethodName, AMethod, ADocString);
+  Result^.ml_flags := Result^.ml_flags or METH_CLASS;
 end;
 
 function  TMethodsContainer.AddDelphiMethod( AMethodName  : PAnsiChar;
