@@ -3012,7 +3012,7 @@ begin
     FDLLHandle := Windows.LoadLibrary(PChar(S));
     {$else}
     //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
-    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_LAZY+RTLD_GLOBAL));
+    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_NOW+RTLD_GLOBAL));
     {$endif}
   end;
 end;
@@ -4114,7 +4114,6 @@ end;
 
 procedure TPythonEngine.DoOpenDll(const aDllName : String);
 var
-  NMajor, NMinor: Integer;
   i: Integer;
 begin
   if UseLastKnownVersion then
