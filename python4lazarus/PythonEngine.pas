@@ -3011,8 +3011,12 @@ begin
     {$ifdef windows}
     FDLLHandle := Windows.LoadLibrary(PChar(S));
     {$else}
-    //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
-    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_NOW+RTLD_GLOBAL));
+      //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
+      {$ifdef haiku}
+      FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_NOW+RTLD_GLOBAL));
+      {$else}
+      FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_LAZY+RTLD_GLOBAL));
+      {$endif}
     {$endif}
   end;
 end;
