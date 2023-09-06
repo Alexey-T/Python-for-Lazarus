@@ -3011,12 +3011,9 @@ begin
     {$ifdef windows}
     FDLLHandle := Windows.LoadLibrary(PChar(S));
     {$else}
-      //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
-      {$ifdef haiku}
-      FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_NOW+RTLD_GLOBAL));
-      {$else}
-      FDLLHandle := PtrInt(dlopen(PAnsiChar(S), RTLD_LAZY+RTLD_GLOBAL));
-      {$endif}
+    //Linux: need here RTLD_GLOBAL, so Python can do "import ctypes"
+    //Haiku: without RTLD_NOW it doesn't seem to detect the library or plugins without running with "LD_PRELOAD ..."
+    FDLLHandle := PtrInt(dlopen(PAnsiChar(S), {$ifdef haiku}RTLD_NOW{$else}RTLD_LAZY{$endif}+RTLD_GLOBAL));
     {$endif}
   end;
 end;
