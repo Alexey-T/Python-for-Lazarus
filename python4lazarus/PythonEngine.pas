@@ -5077,7 +5077,7 @@ end;
 {$IFDEF FPC}
 function TPythonEngine.EncodeString (const str: AnsiString): AnsiString; overload;
 begin
-  Result := str;
+  Result := UTF8Encode(str);
 end;
 {$ENDIF}
 
@@ -6718,7 +6718,7 @@ procedure TError.RaiseError( const msg : AnsiString );
 begin
   Owner.Owner.CheckEngine;
   with Owner.Owner.Engine do
-    PyErr_SetString( Error, PAnsiChar(msg) );
+    PyErr_SetString(Error, PAnsiChar(EncodeString(msg)));
 end;
 
 procedure TError.RaiseErrorObj( const msg : AnsiString; obj : PPyObject );
@@ -6769,7 +6769,8 @@ begin
           end
         else
           raise Exception.Create('TError.RaiseErrorObj: I didn''t get an instance' );
-        PyErr_SetObject( Error, res );
+        PyErr_SetObject(Error, res);
+        Py_XDECREF(res);
       end
     else
       PyErr_SetObject( Error, obj );
@@ -7223,7 +7224,7 @@ begin
     begin
       Result := -1;
       PyErr_SetString (PyExc_AttributeError^,
-        PAnsiChar(AnsiString(Format('Unknown attribute "%s"',[key]))));
+        PAnsiChar(EncodeString(Format('Unknown attribute "%s"',[key]))));
     end;
 end;
 
