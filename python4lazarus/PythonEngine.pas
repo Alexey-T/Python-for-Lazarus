@@ -4672,7 +4672,7 @@ var
 begin
   SL := TStringList.Create;
   try
-    SL.LoadFromFile(FileName);
+    SL.LoadFromFile(FileName, TEncoding.UTF8);
     ExecStrings(SL, locals, globals, FileName);
   finally
     SL.Free;
@@ -5891,15 +5891,19 @@ begin
 end;
 
 procedure TPythonEngine.CheckError(ACatchStopEx : Boolean = False);
+
   procedure ProcessSystemExit;
   var
     errtype, errvalue, errtraceback: PPyObject;
     SErrValue: string;
   begin
+    // PyErr_Fetch clears the error. The returned python objects are new references
     PyErr_Fetch(errtype, errvalue, errtraceback);
     Traceback.Refresh(errtraceback);
     SErrValue := PyObjectAsString(errvalue);
-    PyErr_Clear;
+    Py_XDECREF(errtype);
+    Py_XDECREF(errvalue);
+    Py_XDECREF(errtraceback);
     raise EPySystemExit.CreateResFmt(@SPyExcSystemError, [SErrValue]);
   end;
 
