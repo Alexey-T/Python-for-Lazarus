@@ -25,7 +25,7 @@
     </CompilerOptions>
     <Description Value="Wrapper for Python engine, forked from Python4Delphi."/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="4"/>
+    <Version Major="1" Minor="4" Release="1"/>
     <Files Count="5">
       <Item1>
         <Filename Value="python4lazarus_register.pas"/>
