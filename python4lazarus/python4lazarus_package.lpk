@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="5">
+  <Package Version="6">
     <PathDelim Value="\"/>
     <Name Value="python4lazarus_package"/>
     <Type Value="RunAndDesignTime"/>
@@ -9,7 +9,7 @@
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)-$(FPCVer)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -26,41 +26,40 @@
     <Description Value="Wrapper for Python engine, forked from Python4Delphi."/>
     <License Value="MIT"/>
     <Version Major="1" Minor="4" Release="1"/>
-    <Files Count="5">
-      <Item1>
+    <Files>
+      <Item>
         <Filename Value="python4lazarus_register.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="Python4Lazarus_register"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <Filename Value="PythonEngine.pas"/>
         <UnitName Value="PythonEngine"/>
-      </Item2>
-      <Item3>
+      </Item>
+      <Item>
         <Filename Value="PythonGUIInputOutput.pas"/>
         <UnitName Value="PythonGUIInputOutput"/>
-      </Item3>
-      <Item4>
+      </Item>
+      <Item>
         <Filename Value="MethodCallBack.pas"/>
         <UnitName Value="MethodCallBack"/>
-      </Item4>
-      <Item5>
+      </Item>
+      <Item>
         <Filename Value="VarPyth.pas"/>
         <UnitName Value="VarPyth"/>
-      </Item5>
+      </Item>
     </Files>
-    <CompatibilityMode Value="True"/>
-    <RequiredPkgs Count="2">
-      <Item1>
+    <RequiredPkgs>
+      <Item>
         <PackageName Value="LCL"/>
         <MaxVersion Major="1"/>
         <MinVersion Major="1"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <PackageName Value="FCL"/>
         <MaxVersion Major="1"/>
         <MinVersion Major="1"/>
-      </Item2>
+      </Item>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
